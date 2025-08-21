@@ -1,341 +1,280 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Darios Gym</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:-apple-system,sans-serif;background:#f5f5f5;padding:10px}
-        .container{max-width:400px;margin:0 auto}
-        .card{background:#fff;border-radius:12px;padding:15px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-        input,select,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px}
-        button{background:#007AFF;color:#fff;border:none;padding:10px 15px;border-radius:8px;font-size:14px;cursor:pointer}
-        .btn-sm{padding:6px 10px;font-size:12px}
-        .btn-red{background:#FF3B30}
-        .btn-green{background:#34C759}
-        .btn-gray{background:#8E8E93}
-        .flex{display:flex;gap:8px;align-items:center}
-        .flex-between{justify-content:space-between}
-        .set-row{display:flex;gap:5px;align-items:center;margin-bottom:8px;padding:8px;border:1px solid #eee;border-radius:6px}
-        .set-num{width:20px;text-align:center;font-weight:600;color:#666}
-        .check-btn{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-        .checked{background:#34C759;color:#fff}
-        .unchecked{background:#eee;color:#999}
-        .exercise-header{margin-bottom:10px}
-        .exercise-name{font-weight:600;margin-bottom:4px}
-        .exercise-info{font-size:12px;color:#666;background:#f0f0f0;padding:2px 6px;border-radius:4px;display:inline-block}
-        .edit-mode{border:2px dashed #007AFF;background:#f8f9ff}
-        .stats{text-align:center;color:#007AFF;font-weight:600}
-        .rest{text-align:center;color:#666;font-size:16px}
-        .motivation{background:#e8f5e8;color:#2d5016;text-align:center;padding:15px;border-radius:8px;font-weight:500}
-        .hidden{display:none}
-        h1{font-size:20px;color:#333}
-        h2{font-size:16px;color:#007AFF}
-        h3{font-size:14px;color:#333;margin-bottom:8px}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Darios Gym</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,sans-serif;background:#000;color:#fff;padding:10px}
+.c{max-width:400px;margin:0 auto}
+.cd{background:#1c1c1e;border-radius:12px;padding:15px;margin-bottom:12px}
+.hd{background:linear-gradient(135deg,#007AFF,#0051D5);padding:20px;border-radius:12px}
+.t{font-size:24px;font-weight:700}
+.p{width:50px;height:50px;position:relative}
+.p svg{transform:rotate(-90deg)}
+.pt{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;font-weight:600}
+.r{display:flex;gap:10px;margin-top:15px}
+input,select,button{width:100%;padding:12px;background:#2c2c2e;border:1px solid #444;border-radius:8px;color:#fff;font-size:16px}
+button{background:#007AFF;border:none;font-weight:600;cursor:pointer}
+button:active{transform:scale(0.95)}
+.b{padding:8px;width:auto}
+.br{background:#FF3B30}
+.bg{background:#34C759}
+.bgy{background:#8E8E93}
+.f{display:flex;gap:10px;align-items:center}
+.fb{justify-content:space-between}
+.e{background:#2c2c2e;border-radius:10px;padding:12px;margin-bottom:10px}
+.eh{display:flex;justify-content:space-between;margin-bottom:10px}
+.en{font-size:17px;font-weight:600}
+.eb{background:#007AFF;padding:4px 10px;border-radius:12px;font-size:12px}
+.s{display:grid;grid-template-columns:30px 1fr 70px 45px;gap:8px;align-items:center;padding:8px;background:#1c1c1e;border-radius:8px;margin-bottom:6px}
+.s.d{background:rgba(52,199,89,0.15);border:1px solid #34C759}
+.sn{width:30px;height:30px;background:#007AFF;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600}
+.s.d .sn{background:#34C759}
+.si{padding:8px;background:#000;border:1px solid #444;border-radius:6px;color:#fff;text-align:center}
+.ch{width:45px;height:35px;border-radius:8px;background:#2c2c2e;border:2px solid #444;color:#666;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ch.on{background:#34C759;border-color:#34C759;color:#fff}
+.tb{display:flex;gap:5px;margin-bottom:12px;background:#1c1c1e;padding:4px;border-radius:10px}
+.ta{flex:1;padding:10px;background:transparent;border:none;color:#888;font-size:14px;font-weight:600;cursor:pointer;border-radius:8px}
+.ta.a{background:#007AFF;color:#fff}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px}
+.st{background:#2c2c2e;padding:15px;border-radius:10px;text-align:center}
+.sv{font-size:24px;font-weight:700;color:#007AFF}
+.sl{font-size:11px;color:#888;text-transform:uppercase;margin-top:5px}
+.h{display:none}
+.m{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:999;align-items:center;justify-content:center;padding:20px}
+.m.o{display:flex}
+.mc{background:#1c1c1e;border-radius:15px;padding:20px;width:100%;max-width:400px}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.x{width:30px;height:30px;border-radius:50%;background:#2c2c2e;border:none;color:#fff;cursor:pointer}
+.fg{margin-bottom:15px}
+.l{display:block;margin-bottom:5px;font-size:12px;color:#888;text-transform:uppercase}
+.ti{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1c1c1e;padding:12px 20px;border-radius:25px;box-shadow:0 4px 15px rgba(0,0,0,0.5);display:none;align-items:center;gap:15px;z-index:100}
+.ti.o{display:flex}
+.tt{font-size:20px;font-weight:700;min-width:60px}
+.em{border:2px dashed #007AFF;background:rgba(0,122,255,0.1)}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <div class="flex flex-between">
-                <h1>💪 Darios Gym</h1>
-                <div class="stats" id="stats">0/0</div>
-            </div>
-            <br>
-            <input type="date" id="date" value="">
-            <br><br>
-            <select id="day">
-                <option value="Montag">Montag</option>
-                <option value="Dienstag">Dienstag</option>
-                <option value="Mittwoch">Mittwoch</option>
-                <option value="Donnerstag">Donnerstag</option>
-                <option value="Freitag">Freitag</option>
-                <option value="Samstag">Samstag</option>
-                <option value="Sonntag">Sonntag</option>
-            </select>
-        </div>
+<div class="c">
+<div class="cd hd">
+<div class="f fb">
+<div class="t">💪 Darios Gym</div>
+<div class="p">
+<svg width="50" height="50">
+<circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="4"/>
+<circle cx="25" cy="25" r="20" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="125.6" id="pr"/>
+</svg>
+<div class="pt" id="pt">0%</div>
+</div>
+</div>
+<div class="r">
+<input type="date" id="dt">
+<select id="dy">
+<option>Montag</option>
+<option>Dienstag</option>
+<option>Mittwoch</option>
+<option>Donnerstag</option>
+<option>Freitag</option>
+<option>Samstag</option>
+<option>Sonntag</option>
+</select>
+</div>
+</div>
 
-```
-    <div class="card">
-        <div class="flex flex-between">
-            <h2 id="title">Training</h2>
-            <button class="btn-sm" onclick="toggleEdit()" id="editBtn">✏️</button>
-        </div>
-        <div id="restDay" class="rest hidden">🛌 Ruhetag!</div>
-        <div class="flex flex-between">
-            <span id="exerciseCount"></span>
-            <button class="btn-sm btn-red" onclick="resetWorkout()">🔄</button>
-        </div>
-    </div>
+<div class="tb">
+<button class="ta a" onclick="tb('w')">Training</button>
+<button class="ta" onclick="tb('s')">Stats</button>
+<button class="ta" onclick="tb('h')">Verlauf</button>
+</div>
 
-    <div id="exercises"></div>
-    
-    <div id="addExercise" class="card edit-mode hidden">
-        <h3>Neue Übung</h3>
-        <input type="text" id="newName" placeholder="Übungsname">
-        <br><br>
-        <div class="flex">
-            <input type="number" id="newSets" value="3" min="1" style="width:80px">
-            <input type="text" id="newReps" value="8-12" placeholder="Wiederholungen">
-        </div>
-        <br>
-        <button onclick="addExercise()">➕ Hinzufügen</button>
-    </div>
+<div id="w">
+<div class="cd">
+<div class="f fb">
+<h2 id="wt">Loading...</h2>
+<button class="b bgy" onclick="ed()" id="eb">✏️</button>
+</div>
+<div class="f" style="gap:5px;margin-top:10px">
+<button class="b" onclick="tm()">⏱️</button>
+<button class="b bgy" onclick="rs()">🔄</button>
+<button class="b bgy" onclick="cp()">📋</button>
+<button class="b bgy" onclick="nt()">📝</button>
+</div>
+</div>
+<div id="rt" class="cd h" style="text-align:center;padding:40px;font-size:20px;color:#888">🛌 Ruhetag!</div>
+<div id="ex"></div>
+</div>
 
-    <div class="card motivation">
-        💪 Keep going, Dario! Du schaffst das!
-    </div>
+<div id="s" class="h">
+<div class="sg">
+<div class="st"><div class="sv" id="tw">0</div><div class="sl">Workouts</div></div>
+<div class="st"><div class="sv" id="sk">0</div><div class="sl">Streak</div></div>
+<div class="st"><div class="sv" id="tk">0</div><div class="sl">Total KG</div></div>
+</div>
+<div class="f" style="gap:10px;margin-top:15px">
+<button onclick="xp()">📤 Export</button>
+<button onclick="im()">📥 Import</button>
+</div>
+</div>
+
+<div id="h" class="h"></div>
+</div>
+
+<div class="ti" id="ti">
+<div class="tt" id="tt">00:00</div>
+<button class="b" onclick="st()">Stop</button>
+</div>
+
+<div class="m" id="am">
+<div class="mc">
+<div class="mh">
+<h3>Neue Übung</h3>
+<button class="x" onclick="cm('am')">×</button>
+</div>
+<div class="fg">
+<label class="l">Name</label>
+<input id="nn" placeholder="z.B. Bankdrücken">
+</div>
+<div class="fg">
+<label class="l">Sätze</label>
+<input type="number" id="ns" value="3" min="1">
+</div>
+<div class="fg">
+<label class="l">Wiederholungen</label>
+<input id="nr" value="8-12">
+</div>
+<button onclick="ae()">Hinzufügen</button>
+</div>
+</div>
+
+<div class="m" id="nm">
+<div class="mc">
+<div class="mh">
+<h3>Notizen</h3>
+<button class="x" onclick="cm('nm')">×</button>
+</div>
+<textarea id="no" style="width:100%;height:150px;background:#2c2c2e;border:1px solid #444;border-radius:8px;padding:10px;color:#fff"></textarea>
+<button onclick="sn()" style="margin-top:15px">Speichern</button>
+</div>
 </div>
 
 <script>
-    let editMode = false;
-    let currentDay = 'Montag';
-    let selectedDate = new Date().toISOString().split('T')[0];
-    
-    const defaultPlan = {
-        'Montag': {title: 'Brust & Trizeps + Bauch + Cardio', exercises: [
-            {name: 'Brustpresse', sets: 4, reps: '8-12'},
-            {name: 'Butterfly (Brust)', sets: 4, reps: '10-12'},
-            {name: 'Dips-Maschine', sets: 4, reps: '10-12'},
-            {name: 'Trizepsstrecken', sets: 3, reps: '12-15'},
-            {name: 'Bauchmaschine', sets: 4, reps: '15-20'},
-            {name: 'Plank', sets: 3, reps: '30-60s'}
-        ]},
-        'Dienstag': {title: 'Rücken & Bizeps', exercises: [
-            {name: 'Latzug breit', sets: 4, reps: '8-12'},
-            {name: 'Rudermaschine', sets: 4, reps: '8-12'},
-            {name: 'Rückenstrecker', sets: 3, reps: '12-15'},
-            {name: 'Klimmzug-Maschine', sets: 3, reps: '6-10'},
-            {name: 'Bizepscurls', sets: 4, reps: '10-12'}
-        ]},
-        'Mittwoch': {title: 'Beine + Bauch + Cardio', exercises: [
-            {name: 'Beinpresse', sets: 4, reps: '10-12'},
-            {name: 'Beinstrecker', sets: 4, reps: '10-12'},
-            {name: 'Beinbeuger', sets: 4, reps: '10-12'},
-            {name: 'Wadenheben', sets: 4, reps: '15-20'},
-            {name: 'Bauchmaschine', sets: 4, reps: '15-20'}
-        ]},
-        'Donnerstag': {title: 'Brust/Schulter + Bauch', exercises: [
-            {name: 'Brustpresse (eng)', sets: 4, reps: '8-12'},
-            {name: 'Butterfly Reverse', sets: 4, reps: '10-12'},
-            {name: 'Schulterpresse', sets: 4, reps: '8-12'},
-            {name: 'Seitheben', sets: 3, reps: '12-15'},
-            {name: 'Russian Twists', sets: 3, reps: '20'}
-        ]},
-        'Freitag': {title: 'Rücken & Bauch', exercises: [
-            {name: 'Latzug eng', sets: 4, reps: '8-12'},
-            {name: 'Rudermaschine breit', sets: 4, reps: '8-12'},
-            {name: 'Facepulls', sets: 4, reps: '12-15'},
-            {name: 'Shrugs', sets: 3, reps: '12-15'},
-            {name: 'Bizepscurls', sets: 3, reps: '10-12'}
-        ]},
-        'Samstag': {title: 'Ganzkörper + Cardio', exercises: [
-            {name: 'Beinpresse', sets: 3, reps: '12'},
-            {name: 'Brustpresse', sets: 3, reps: '12'},
-            {name: 'Latzug', sets: 3, reps: '12'},
-            {name: 'Schulterpresse', sets: 3, reps: '12'}
-        ]},
-        'Sonntag': {title: 'Ruhetag', exercises: [], rest: true}
-    };
+let d='Montag',dt=new Date().toISOString().split('T')[0],em=0,ti,ts=0;
+const dp={
+Montag:{t:'Brust & Trizeps',e:[{n:'Brustpresse',s:4,r:'8-12'},{n:'Butterfly',s:4,r:'10-12'},{n:'Dips',s:4,r:'10-12'},{n:'Trizeps',s:3,r:'12-15'}]},
+Dienstag:{t:'Rücken & Bizeps',e:[{n:'Latzug',s:4,r:'8-12'},{n:'Rudern',s:4,r:'8-12'},{n:'Klimmzüge',s:3,r:'6-10'},{n:'Bizeps',s:4,r:'10-12'}]},
+Mittwoch:{t:'Beine',e:[{n:'Beinpresse',s:4,r:'10-12'},{n:'Beinstrecker',s:4,r:'10-12'},{n:'Beinbeuger',s:4,r:'10-12'},{n:'Waden',s:4,r:'15-20'}]},
+Donnerstag:{t:'Schultern',e:[{n:'Schulterpresse',s:4,r:'8-12'},{n:'Seitheben',s:4,r:'12-15'},{n:'Reverse Fly',s:4,r:'10-12'}]},
+Freitag:{t:'Arms',e:[{n:'Bizepscurls',s:4,r:'10-12'},{n:'Hammercurls',s:3,r:'10-12'},{n:'Trizeps',s:4,r:'12-15'}]},
+Samstag:{t:'Ganzkörper',e:[{n:'Beinpresse',s:3,r:'12'},{n:'Brustpresse',s:3,r:'12'},{n:'Latzug',s:3,r:'12'}]},
+Sonntag:{t:'Ruhetag',e:[],rt:1}
+};
+let p={...dp},w={};
 
-    let workoutPlan = {...defaultPlan};
-    let workouts = {};
+function l(){try{p={...dp,...JSON.parse(localStorage.getItem('p')||'{}')};w=JSON.parse(localStorage.getItem('w')||'{}')}catch{}}
+function sv(){localStorage.setItem('p',JSON.stringify(p));localStorage.setItem('w',JSON.stringify(w))}
+function k(){return`${dt}-${d}`}
+function iw(){const K=k(),P=p[d];if(!w[K]&&P&&!P.rt){w[K]={e:P.e.map(x=>({...x,s:Array(x.s).fill().map(()=>({w:'',r:'',d:0}))})),n:''};sv()}}
 
-    // Load data
-    try {
-        workoutPlan = {...defaultPlan, ...JSON.parse(localStorage.getItem('workoutPlan') || '{}')};
-        workouts = JSON.parse(localStorage.getItem('workouts') || '{}');
-    } catch(e) {}
+function rd(){
+const P=p[d],W=w[k()];
+document.getElementById('wt').textContent=P.t;
+document.getElementById('rt').classList.toggle('h',!P.rt);
 
-    // Save data
-    function save() {
-        try {
-            localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
-            localStorage.setItem('workouts', JSON.stringify(workouts));
-        } catch(e) {}
-    }
+if(P.rt){document.getElementById('ex').innerHTML='';up(100);return}
 
-    function getKey() {
-        return `${selectedDate}-${currentDay}`;
-    }
+let c=0,t=0;
+if(W){W.e.forEach(x=>x.s.forEach(s=>{t++;if(s.d)c++}))}
+up(t>0?(c/t)*100:0);
 
-    function initWorkout() {
-        const key = getKey();
-        if (!workouts[key] && workoutPlan[currentDay] && !workoutPlan[currentDay].rest) {
-            workouts[key] = {
-                exercises: workoutPlan[currentDay].exercises.map(ex => ({
-                    ...ex,
-                    sets: Array(ex.sets).fill().map(() => ({weight: '', reps: '', done: false}))
-                })),
-                notes: ''
-            };
-            save();
-        }
-    }
+let h='';
+P.e.forEach((x,i)=>{
+const E=W?W.e[i]:null;
+h+=`<div class="e ${em?'em':''}">`;
+if(em){
+h+=`<input value="${x.n}" onchange="ue(${i},'n',this.value)" style="margin-bottom:10px">
+<div class="f"><input type="number" value="${x.s}" min="1" onchange="ue(${i},'s',+this.value)" style="width:80px">
+<input value="${x.r}" onchange="ue(${i},'r',this.value)">
+<button class="b br" onclick="re(${i})">🗑️</button></div>`
+}else{
+h+=`<div class="eh"><div class="en">${x.n}</div><div class="eb">${x.s}×${x.r}</div></div>`;
+if(E){E.s.forEach((s,j)=>{
+h+=`<div class="s ${s.d?'d':''}"><div class="sn">${j+1}</div>
+<input class="si" placeholder="kg" value="${s.w}" onchange="us(${i},${j},'w',this.value)">
+<input class="si" placeholder="Wdh" value="${s.r}" onchange="us(${i},${j},'r',this.value)" style="width:70px">
+<button class="ch ${s.d?'on':''}" onclick="tg(${i},${j})">${s.d?'✓':''}</button></div>`
+})}
+}
+h+=`</div>`
+});
+if(em)h+=`<button onclick="document.getElementById('am').classList.add('o')" style="width:100%;margin-top:10px">➕ Übung hinzufügen</button>`;
+document.getElementById('ex').innerHTML=h;
+}
 
-    function render() {
-        const plan = workoutPlan[currentDay];
-        const workout = workouts[getKey()];
-        
-        document.getElementById('title').textContent = plan.title;
-        document.getElementById('exerciseCount').textContent = `${plan.exercises.length} Übungen`;
-        
-        if (plan.rest) {
-            document.getElementById('restDay').classList.remove('hidden');
-            document.getElementById('exercises').innerHTML = '';
-            return;
-        } else {
-            document.getElementById('restDay').classList.add('hidden');
-        }
+function up(v){
+const c=document.getElementById('pr');
+c.style.strokeDashoffset=125.6-(v/100)*125.6;
+document.getElementById('pt').textContent=Math.round(v)+'%';
+}
 
-        let completed = 0, total = 0;
-        if (workout) {
-            workout.exercises.forEach(ex => {
-                ex.sets.forEach(set => {
-                    total++;
-                    if (set.done) completed++;
-                });
-            });
-        }
-        document.getElementById('stats').textContent = `${completed}/${total}`;
+function us(i,j,f,v){const K=k();if(w[K]){w[K].e[i].s[j][f]=v;sv();rd()}}
+function tg(i,j){const K=k();if(w[K]){w[K].e[i].s[j].d=!w[K].e[i].s[j].d;if(navigator.vibrate)navigator.vibrate(50);sv();rd()}}
+function ue(i,f,v){
+p[d].e[i][f]=v;
+if(f==='s'){const K=k();if(w[K]){const o=w[K].e[i].s;w[K].e[i].s=Array(v).fill().map((_,j)=>o[j]||{w:'',r:'',d:0})}}
+sv();rd();
+}
+function re(i){if(confirm('Löschen?')){p[d].e.splice(i,1);sv();rd()}}
+function ed(){em=!em;document.getElementById('eb').textContent=em?'💾':'✏️';rd()}
+function rs(){if(confirm('Reset?')){const K=k();if(w[K]){w[K].e.forEach(x=>x.s.forEach(s=>{s.w='';s.r='';s.d=0}));sv();rd()}}}
+function cp(){
+const ks=Object.keys(w).filter(x=>x.endsWith(`-${d}`)&&x!==k()).sort().reverse();
+if(ks[0]){const l=w[ks[0]],c=k();if(w[c]){w[c].e.forEach((x,i)=>{if(l.e[i])x.s.forEach((s,j)=>{if(l.e[i].s[j]){s.w=l.e[i].s[j].w;s.r=l.e[i].s[j].r}})});sv();rd()}}
+}
+function tm(){ts=0;document.getElementById('ti').classList.add('o');ti=setInterval(()=>{ts++;document.getElementById('tt').textContent=`${String(Math.floor(ts/60)).padStart(2,'0')}:${String(ts%60).padStart(2,'0')}`},1000)}
+function st(){clearInterval(ti);document.getElementById('ti').classList.remove('o')}
+function nt(){const K=k(),W=w[K];if(W)document.getElementById('no').value=W.n||'';document.getElementById('nm').classList.add('o')}
+function sn(){const K=k();if(w[K]){w[K].n=document.getElementById('no').value;sv();cm('nm')}}
+function ae(){
+const n=document.getElementById('nn').value.trim();
+const s=+document.getElementById('ns').value||3;
+const r=document.getElementById('nr').value||'8-12';
+if(n){p[d].e.push({n,s,r});document.getElementById('nn').value='';document.getElementById('ns').value='3';document.getElementById('nr').value='8-12';cm('am');sv();iw();rd()}
+}
+function cm(id){document.getElementById(id).classList.remove('o')}
+function tb(t){
+document.querySelectorAll('.ta').forEach(b=>b.classList.remove('a'));
+event.target.classList.add('a');
+['w','s','h'].forEach(id=>document.getElementById(id).classList.add('h'));
+document.getElementById(t).classList.remove('h');
+if(t==='s')ss();
+if(t==='h')sh();
+}
+function ss(){
+document.getElementById('tw').textContent=Object.keys(w).length;
+let kg=0;Object.values(w).forEach(x=>x.e.forEach(e=>e.s.forEach(s=>{if(s.d&&s.w&&s.r)kg+=parseFloat(s.w)*parseInt(s.r)})));
+document.getElementById('tk').textContent=Math.round(kg);
+let sk=0;const td=new Date();for(let i=0;i<30;i++){const dd=new Date(td);dd.setDate(dd.getDate()-i);if(Object.keys(w).some(k=>k.startsWith(dd.toISOString().split('T')[0])))sk++;else if(i>0)break}
+document.getElementById('sk').textContent=sk;
+}
+function sh(){
+const ks=Object.keys(w).sort().reverse();
+let h='';ks.slice(0,10).forEach(k=>{const[da,dy]=k.split('-'),wo=w[k];let c=0,t=0;wo.e.forEach(x=>x.s.forEach(s=>{t++;if(s.d)c++}));
+h+=`<div class="cd"><div class="f fb"><div>${dy}<br><small style="color:#888">${da}</small></div><div style="text-align:right"><div style="font-size:20px;color:#007AFF">${Math.round(c/t*100)}%</div><small style="color:#888">${c}/${t}</small></div></div></div>`});
+document.getElementById('h').innerHTML=h||'<div class="cd">Keine Historie</div>';
+}
+function xp(){const x={p,w,d:new Date().toISOString()},b=new Blob([JSON.stringify(x)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`gym-${new Date().toISOString().split('T')[0]}.json`;a.click()}
+function im(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=e=>{const f=new FileReader();f.onload=v=>{try{const x=JSON.parse(v.target.result);if(x.p)p=x.p;if(x.w)w=x.w;sv();rd();ss()}catch{}};f.readAsText(e.target.files[0])};i.click()}
 
-        let html = '';
-        plan.exercises.forEach((ex, i) => {
-            html += `
-            <div class="card">
-                <div class="exercise-header">
-                    ${editMode ? `
-                    <input type="text" value="${ex.name}" onchange="updateExercise(${i}, 'name', this.value)">
-                    <div class="flex" style="margin-top:8px">
-                        <input type="number" value="${ex.sets}" min="1" onchange="updateExercise(${i}, 'sets', +this.value)" style="width:60px">
-                        <input type="text" value="${ex.reps}" onchange="updateExercise(${i}, 'reps', this.value)">
-                        <button class="btn-red btn-sm" onclick="removeExercise(${i})">🗑️</button>
-                    </div>
-                    ` : `
-                    <div class="exercise-name">${ex.name}</div>
-                    <span class="exercise-info">${ex.sets} Sätze × ${ex.reps}</span>
-                    `}
-                </div>
-                ${workout ? workout.exercises[i].sets.map((set, j) => `
-                <div class="set-row">
-                    <span class="set-num">${j+1}</span>
-                    <input type="number" placeholder="kg" value="${set.weight}" onchange="updateSet(${i}, ${j}, 'weight', this.value)" style="flex:1">
-                    <input type="number" placeholder="Wdh" value="${set.reps}" onchange="updateSet(${i}, ${j}, 'reps', this.value)" style="width:60px">
-                    <button class="check-btn ${set.done ? 'checked' : 'unchecked'}" onclick="toggleSet(${i}, ${j})">✓</button>
-                </div>
-                `).join('') : ''}
-            </div>`;
-        });
+document.getElementById('dt').addEventListener('change',e=>{dt=e.target.value;iw();rd()});
+document.getElementById('dy').addEventListener('change',e=>{d=e.target.value;iw();rd()});
+document.querySelectorAll('.m').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('o')}));
 
-        if (editMode) {
-            html += `
-            <div class="card edit-mode">
-                <button onclick="showAddExercise()" style="width:100%">➕ Übung hinzufügen</button>
-            </div>`;
-        }
-
-        document.getElementById('exercises').innerHTML = html;
-    }
-
-    function updateSet(exIndex, setIndex, field, value) {
-        const key = getKey();
-        if (!workouts[key]) return;
-        workouts[key].exercises[exIndex].sets[setIndex][field] = value;
-        save();
-        render();
-    }
-
-    function toggleSet(exIndex, setIndex) {
-        const key = getKey();
-        if (!workouts[key]) return;
-        workouts[key].exercises[exIndex].sets[setIndex].done = !workouts[key].exercises[exIndex].sets[setIndex].done;
-        save();
-        render();
-    }
-
-    function updateExercise(index, field, value) {
-        workoutPlan[currentDay].exercises[index][field] = value;
-        if (field === 'sets') {
-            const key = getKey();
-            if (workouts[key]) {
-                const sets = Array(value).fill().map(() => ({weight: '', reps: '', done: false}));
-                workouts[key].exercises[index].sets = sets;
-            }
-        }
-        save();
-        render();
-    }
-
-    function removeExercise(index) {
-        workoutPlan[currentDay].exercises.splice(index, 1);
-        save();
-        render();
-    }
-
-    function addExercise() {
-        const name = document.getElementById('newName').value.trim();
-        const sets = +document.getElementById('newSets').value || 3;
-        const reps = document.getElementById('newReps').value || '8-12';
-        
-        if (name) {
-            workoutPlan[currentDay].exercises.push({name, sets, reps});
-            document.getElementById('newName').value = '';
-            document.getElementById('newSets').value = '3';
-            document.getElementById('newReps').value = '8-12';
-            document.getElementById('addExercise').classList.add('hidden');
-            save();
-            render();
-        }
-    }
-
-    function showAddExercise() {
-        document.getElementById('addExercise').classList.remove('hidden');
-    }
-
-    function toggleEdit() {
-        editMode = !editMode;
-        document.getElementById('editBtn').textContent = editMode ? '💾' : '✏️';
-        document.getElementById('addExercise').classList.add('hidden');
-        render();
-    }
-
-    function resetWorkout() {
-        const key = getKey();
-        if (workouts[key]) {
-            workouts[key].exercises.forEach(ex => {
-                ex.sets.forEach(set => {
-                    set.weight = '';
-                    set.reps = '';
-                    set.done = false;
-                });
-            });
-            save();
-            render();
-        }
-    }
-
-    // Events
-    document.getElementById('date').addEventListener('change', e => {
-        selectedDate = e.target.value;
-        initWorkout();
-        render();
-    });
-
-    document.getElementById('day').addEventListener('change', e => {
-        currentDay = e.target.value;
-        initWorkout();
-        render();
-    });
-
-    // Init
-    document.getElementById('date').value = selectedDate;
-    document.getElementById('day').value = currentDay;
-    initWorkout();
-    render();
+l();document.getElementById('dt').value=dt;document.getElementById('dy').value=d;iw();rd();
 </script>
-```
 
 </body>
 </html>
