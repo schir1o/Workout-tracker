@@ -1,688 +1,339 @@
 <!DOCTYPE html>
 
-<html lang="de">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Darios Workout Tracker</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Darios Gym</title>
     <style>
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-        }
-        .app-container {
-            width: 100%;
-            min-height: 100vh;
-        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,sans-serif;background:#f5f5f5;padding:10px}
+        .container{max-width:400px;margin:0 auto}
+        .card{background:#fff;border-radius:12px;padding:15px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+        input,select,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px}
+        button{background:#007AFF;color:#fff;border:none;padding:10px 15px;border-radius:8px;font-size:14px;cursor:pointer}
+        .btn-sm{padding:6px 10px;font-size:12px}
+        .btn-red{background:#FF3B30}
+        .btn-green{background:#34C759}
+        .btn-gray{background:#8E8E93}
+        .flex{display:flex;gap:8px;align-items:center}
+        .flex-between{justify-content:space-between}
+        .set-row{display:flex;gap:5px;align-items:center;margin-bottom:8px;padding:8px;border:1px solid #eee;border-radius:6px}
+        .set-num{width:20px;text-align:center;font-weight:600;color:#666}
+        .check-btn{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+        .checked{background:#34C759;color:#fff}
+        .unchecked{background:#eee;color:#999}
+        .exercise-header{margin-bottom:10px}
+        .exercise-name{font-weight:600;margin-bottom:4px}
+        .exercise-info{font-size:12px;color:#666;background:#f0f0f0;padding:2px 6px;border-radius:4px;display:inline-block}
+        .edit-mode{border:2px dashed #007AFF;background:#f8f9ff}
+        .stats{text-align:center;color:#007AFF;font-weight:600}
+        .rest{text-align:center;color:#666;font-size:16px}
+        .motivation{background:#e8f5e8;color:#2d5016;text-align:center;padding:15px;border-radius:8px;font-weight:500}
+        .hidden{display:none}
+        h1{font-size:20px;color:#333}
+        h2{font-size:16px;color:#007AFF}
+        h3{font-size:14px;color:#333;margin-bottom:8px}
     </style>
 </head>
 <body>
-    <div id="root" class="app-container"></div>
+    <div class="container">
+        <div class="card">
+            <div class="flex flex-between">
+                <h1>💪 Darios Gym</h1>
+                <div class="stats" id="stats">0/0</div>
+            </div>
+            <br>
+            <input type="date" id="date" value="">
+            <br><br>
+            <select id="day">
+                <option value="Montag">Montag</option>
+                <option value="Dienstag">Dienstag</option>
+                <option value="Mittwoch">Mittwoch</option>
+                <option value="Donnerstag">Donnerstag</option>
+                <option value="Freitag">Freitag</option>
+                <option value="Samstag">Samstag</option>
+                <option value="Sonntag">Sonntag</option>
+            </select>
+        </div>
 
 ```
-<script type="text/babel">
-    const { useState, useEffect } = React;
-    const { Calendar, Plus, TrendingUp, RotateCcw, Save, Check, Edit3, Trash2, X } = lucideReact;
+    <div class="card">
+        <div class="flex flex-between">
+            <h2 id="title">Training</h2>
+            <button class="btn-sm" onclick="toggleEdit()" id="editBtn">✏️</button>
+        </div>
+        <div id="restDay" class="rest hidden">🛌 Ruhetag!</div>
+        <div class="flex flex-between">
+            <span id="exerciseCount"></span>
+            <button class="btn-sm btn-red" onclick="resetWorkout()">🔄</button>
+        </div>
+    </div>
 
-    const WorkoutTracker = () => {
-        // LocalStorage für Datenpersistenz
-        const [workouts, setWorkouts] = useState(() => {
-            const saved = localStorage.getItem('workouts');
-            return saved ? JSON.parse(saved) : {};
-        });
-        
-        const [workoutPlan, setWorkoutPlan] = useState(() => {
-            const saved = localStorage.getItem('workoutPlan');
-            return saved ? JSON.parse(saved) : {
-                'Montag': {
-                    title: 'Brust & Trizeps + Bauch + Cardio',
-                    exercises: [
-                        { name: 'Brustpresse', sets: 4, reps: '8-12' },
-                        { name: 'Butterfly (Brust)', sets: 4, reps: '10-12' },
-                        { name: 'Dips-Maschine/Trizepsdrücken', sets: 4, reps: '10-12' },
-                        { name: 'Trizepsstrecken Überkopf', sets: 3, reps: '12-15' },
-                        { name: 'Bauchmaschine', sets: 4, reps: '15-20' },
-                        { name: 'Plank', sets: 3, reps: '30-60 Sek' }
-                    ],
-                    cardio: '20 Min Cardio (Rad/Crosstrainer)'
-                },
-                'Dienstag': {
-                    title: 'Rücken & Bizeps',
-                    exercises: [
-                        { name: 'Latzug breit zur Brust', sets: 4, reps: '8-12' },
-                        { name: 'Rudermaschine eng', sets: 4, reps: '8-12' },
-                        { name: 'Rückenstrecker Maschine', sets: 3, reps: '12-15' },
-                        { name: 'Klimmzug-Maschine (assistiert)', sets: 3, reps: '6-10' },
-                        { name: 'Bizepscurls Maschine', sets: 4, reps: '10-12' },
-                        { name: 'Beinheben (hängend/Maschine)', sets: 3, reps: '12-15' }
-                    ]
-                },
-                'Mittwoch': {
-                    title: 'Beine + Bauch + Cardio',
-                    exercises: [
-                        { name: 'Beinpresse', sets: 4, reps: '10-12' },
-                        { name: 'Beinstrecker', sets: 4, reps: '10-12' },
-                        { name: 'Beinbeuger', sets: 4, reps: '10-12' },
-                        { name: 'Wadenheben Maschine', sets: 4, reps: '15-20' },
-                        { name: 'Bauchmaschine', sets: 4, reps: '15-20' },
-                        { name: 'Seitliche Crunches', sets: 3, reps: '20' }
-                    ],
-                    cardio: '20 Min Rad/Laufband'
-                },
-                'Donnerstag': {
-                    title: 'Brust/Schulter + Bauch + Cardio',
-                    exercises: [
-                        { name: 'Brustpresse (andere Griffposition)', sets: 4, reps: '8-12' },
-                        { name: 'Butterfly Reverse', sets: 4, reps: '10-12' },
-                        { name: 'Schulterpresse Maschine', sets: 4, reps: '8-12' },
-                        { name: 'Seitheben Kabel/Maschine', sets: 3, reps: '12-15' },
-                        { name: 'Bauchmaschine', sets: 4, reps: '15-20' },
-                        { name: 'Russian Twists mit Gewicht', sets: 3, reps: '20' }
-                    ],
-                    cardio: '20 Min Cardio'
-                },
-                'Freitag': {
-                    title: 'Rücken & Bauch',
-                    exercises: [
-                        { name: 'Latzug eng', sets: 4, reps: '8-12' },
-                        { name: 'Rudermaschine breit', sets: 4, reps: '8-12' },
-                        { name: 'Facepulls Seilzug', sets: 4, reps: '12-15' },
-                        { name: 'Shrugs Maschine/Kurzhanteln', sets: 3, reps: '12-15' },
-                        { name: 'Bizepscurls Maschine', sets: 3, reps: '10-12' },
-                        { name: 'Bauchmaschine + Planks', sets: 4, reps: 'kombiniert' }
-                    ]
-                },
-                'Samstag': {
-                    title: 'Optional Ganzkörper + Cardio',
-                    exercises: [
-                        { name: 'Beinpresse', sets: 3, reps: '12' },
-                        { name: 'Brustpresse', sets: 3, reps: '12' },
-                        { name: 'Latzug', sets: 3, reps: '12' },
-                        { name: 'Schulterpresse', sets: 3, reps: '12' },
-                        { name: 'Bauchmaschine', sets: 3, reps: '20' }
-                    ],
-                    cardio: '30 Min Cardio'
-                },
-                'Sonntag': {
-                    title: 'Ruhetag',
-                    exercises: [],
-                    rest: true
-                }
-            };
-        });
+    <div id="exercises"></div>
+    
+    <div id="addExercise" class="card edit-mode hidden">
+        <h3>Neue Übung</h3>
+        <input type="text" id="newName" placeholder="Übungsname">
+        <br><br>
+        <div class="flex">
+            <input type="number" id="newSets" value="3" min="1" style="width:80px">
+            <input type="text" id="newReps" value="8-12" placeholder="Wiederholungen">
+        </div>
+        <br>
+        <button onclick="addExercise()">➕ Hinzufügen</button>
+    </div>
 
-        const [currentDay, setCurrentDay] = useState('Montag');
-        const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-        const [editMode, setEditMode] = useState(false);
-        const [showAddExercise, setShowAddExercise] = useState(false);
-        const [newExercise, setNewExercise] = useState({ name: '', sets: 3, reps: '8-12' });
+    <div class="card motivation">
+        💪 Keep going, Dario! Du schaffst das!
+    </div>
+</div>
 
-        const days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
-
-        // Speichere Daten automatisch
-        useEffect(() => {
-            localStorage.setItem('workouts', JSON.stringify(workouts));
-        }, [workouts]);
-
-        useEffect(() => {
-            localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
-        }, [workoutPlan]);
-
-        const getWorkoutKey = (date, day) => `${date}-${day}`;
-
-        const initializeWorkout = (date, day) => {
-            const key = getWorkoutKey(date, day);
-            if (!workouts[key] && workoutPlan[day].exercises.length > 0) {
-                const newWorkout = {
-                    exercises: workoutPlan[day].exercises.map(exercise => ({
-                        ...exercise,
-                        completed: Array(exercise.sets).fill().map(() => ({ weight: '', reps: '', done: false }))
-                    })),
-                    cardioCompleted: false,
-                    cardioNotes: '',
-                    notes: ''
-                };
-                setWorkouts(prev => ({ ...prev, [key]: newWorkout }));
-            }
-        };
-
-        const updateSet = (exerciseIndex, setIndex, field, value) => {
-            const key = getWorkoutKey(selectedDate, currentDay);
-            setWorkouts(prev => {
-                const updated = { ...prev };
-                if (!updated[key]) return prev;
-                
-                updated[key] = {
-                    ...updated[key],
-                    exercises: updated[key].exercises.map((exercise, eIndex) => {
-                        if (eIndex === exerciseIndex) {
-                            const newCompleted = [...exercise.completed];
-                            newCompleted[setIndex] = { ...newCompleted[setIndex], [field]: value };
-                            return { ...exercise, completed: newCompleted };
-                        }
-                        return exercise;
-                    })
-                };
-                return updated;
-            });
-        };
-
-        const toggleSetComplete = (exerciseIndex, setIndex) => {
-            const key = getWorkoutKey(selectedDate, currentDay);
-            setWorkouts(prev => {
-                const updated = { ...prev };
-                if (!updated[key]) return prev;
-                
-                const currentSet = updated[key].exercises[exerciseIndex].completed[setIndex];
-                updated[key] = {
-                    ...updated[key],
-                    exercises: updated[key].exercises.map((exercise, eIndex) => {
-                        if (eIndex === exerciseIndex) {
-                            const newCompleted = [...exercise.completed];
-                            newCompleted[setIndex] = { ...newCompleted[setIndex], done: !currentSet.done };
-                            return { ...exercise, completed: newCompleted };
-                        }
-                        return exercise;
-                    })
-                };
-                return updated;
-            });
-        };
-
-        const updateCardio = (completed, notes = '') => {
-            const key = getWorkoutKey(selectedDate, currentDay);
-            setWorkouts(prev => ({
-                ...prev,
-                [key]: {
-                    ...prev[key],
-                    cardioCompleted: completed,
-                    cardioNotes: notes
-                }
-            }));
-        };
-
-        const addExercise = () => {
-            if (newExercise.name.trim()) {
-                setWorkoutPlan(prev => ({
-                    ...prev,
-                    [currentDay]: {
-                        ...prev[currentDay],
-                        exercises: [...prev[currentDay].exercises, { ...newExercise }]
-                    }
-                }));
-                setNewExercise({ name: '', sets: 3, reps: '8-12' });
-                setShowAddExercise(false);
-            }
-        };
-
-        const removeExercise = (exerciseIndex) => {
-            setWorkoutPlan(prev => ({
-                ...prev,
-                [currentDay]: {
-                    ...prev[currentDay],
-                    exercises: prev[currentDay].exercises.filter((_, index) => index !== exerciseIndex)
-                }
-            }));
-        };
-
-        const updateExercise = (exerciseIndex, field, value) => {
-            setWorkoutPlan(prev => ({
-                ...prev,
-                [currentDay]: {
-                    ...prev[currentDay],
-                    exercises: prev[currentDay].exercises.map((exercise, index) => 
-                        index === exerciseIndex ? { ...exercise, [field]: value } : exercise
-                    )
-                }
-            }));
-        };
-
-        const updateTitle = (newTitle) => {
-            setWorkoutPlan(prev => ({
-                ...prev,
-                [currentDay]: {
-                    ...prev[currentDay],
-                    title: newTitle
-                }
-            }));
-        };
-
-        const updateCardioText = (newCardio) => {
-            setWorkoutPlan(prev => ({
-                ...prev,
-                [currentDay]: {
-                    ...prev[currentDay],
-                    cardio: newCardio
-                }
-            }));
-        };
-
-        const getCurrentWorkout = () => {
-            const key = getWorkoutKey(selectedDate, currentDay);
-            return workouts[key];
-        };
-
-        const getCompletionStats = () => {
-            const currentWorkout = getCurrentWorkout();
-            if (!currentWorkout || !workoutPlan[currentDay].exercises.length) return { completed: 0, total: 0 };
-            
-            const totalSets = currentWorkout.exercises.reduce((sum, exercise) => sum + exercise.completed.length, 0);
-            const completedSets = currentWorkout.exercises.reduce((sum, exercise) => 
-                sum + exercise.completed.filter(set => set.done).length, 0
-            );
-            
-            return { completed: completedSets, total: totalSets };
-        };
-
-        const resetWorkout = () => {
-            const key = getWorkoutKey(selectedDate, currentDay);
-            if (workouts[key]) {
-                const resetWorkout = {
-                    ...workouts[key],
-                    exercises: workouts[key].exercises.map(exercise => ({
-                        ...exercise,
-                        completed: exercise.completed.map(() => ({ weight: '', reps: '', done: false }))
-                    })),
-                    cardioCompleted: false,
-                    cardioNotes: '',
-                    notes: ''
-                };
-                setWorkouts(prev => ({ ...prev, [key]: resetWorkout }));
-            }
-        };
-
-        useEffect(() => {
-            initializeWorkout(selectedDate, currentDay);
-        }, [selectedDate, currentDay, workoutPlan]);
-
-        const currentWorkout = getCurrentWorkout();
-        const stats = getCompletionStats();
-        const currentPlan = workoutPlan[currentDay];
-
-        return React.createElement('div', { className: "max-w-md mx-auto p-3 bg-gray-50 min-h-screen" }, [
-            // Header
-            React.createElement('div', { 
-                key: 'header',
-                className: "bg-white rounded-xl shadow-lg p-4 mb-4" 
-            }, [
-                React.createElement('div', { 
-                    key: 'headerContent',
-                    className: "flex items-center justify-between mb-4" 
-                }, [
-                    React.createElement('h1', { 
-                        key: 'title',
-                        className: "text-xl font-bold text-gray-800 flex items-center gap-2" 
-                    }, [
-                        React.createElement(TrendingUp, { 
-                            key: 'icon',
-                            className: "text-blue-600 w-5 h-5" 
-                        }),
-                        "Darios Gym"
-                    ]),
-                    React.createElement('div', { 
-                        key: 'stats',
-                        className: "text-right" 
-                    }, [
-                        React.createElement('div', { 
-                            key: 'statsLabel',
-                            className: "text-xs text-gray-600" 
-                        }, "Heute"),
-                        React.createElement('div', { 
-                            key: 'statsValue',
-                            className: "text-lg font-bold text-blue-600" 
-                        }, stats.total > 0 ? `${stats.completed}/${stats.total}` : '0/0')
-                    ])
-                ]),
-                React.createElement('div', { 
-                    key: 'controls',
-                    className: "space-y-3" 
-                }, [
-                    React.createElement('input', { 
-                        key: 'date',
-                        type: "date",
-                        value: selectedDate,
-                        onChange: (e) => setSelectedDate(e.target.value),
-                        className: "w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    }),
-                    React.createElement('select', { 
-                        key: 'day',
-                        value: currentDay,
-                        onChange: (e) => setCurrentDay(e.target.value),
-                        className: "w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    }, days.map(day => 
-                        React.createElement('option', { 
-                            key: day, 
-                            value: day 
-                        }, day)
-                    ))
-                ])
-            ]),
-
-            // Training Title
-            React.createElement('div', { 
-                key: 'trainingTitle',
-                className: "bg-blue-50 rounded-xl p-4 mb-4" 
-            }, [
-                React.createElement('div', { 
-                    key: 'titleContainer',
-                    className: "flex justify-between items-start mb-2" 
-                }, [
-                    editMode ? 
-                        React.createElement('input', { 
-                            key: 'titleInput',
-                            type: "text",
-                            value: currentPlan.title,
-                            onChange: (e) => updateTitle(e.target.value),
-                            className: "flex-1 p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                        }) :
-                        React.createElement('h2', { 
-                            key: 'titleDisplay',
-                            className: "text-lg font-semibold text-blue-800" 
-                        }, currentPlan.title),
-                    React.createElement('button', { 
-                        key: 'editButton',
-                        onClick: () => setEditMode(!editMode),
-                        className: "ml-2 p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
-                    }, editMode ? 
-                        React.createElement(Save, { className: "w-4 h-4" }) : 
-                        React.createElement(Edit3, { className: "w-4 h-4" })
-                    )
-                ]),
-                currentPlan.rest ? 
-                    React.createElement('p', { 
-                        key: 'restDay',
-                        className: "text-blue-700 text-sm" 
-                    }, "🛌 Heute ist Ruhetag!") :
-                    React.createElement('div', { 
-                        key: 'exerciseInfo',
-                        className: "flex justify-between items-center text-sm" 
-                    }, [
-                        React.createElement('p', { 
-                            key: 'exerciseCount',
-                            className: "text-blue-700" 
-                        }, `${currentPlan.exercises.length} Übungen`),
-                        currentWorkout && React.createElement('button', { 
-                            key: 'resetButton',
-                            onClick: resetWorkout,
-                            className: "flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors text-xs"
-                        }, [
-                            React.createElement(RotateCcw, { 
-                                key: 'resetIcon',
-                                className: "w-3 h-3" 
-                            }),
-                            "Reset"
-                        ])
-                    ])
-            ]),
-
-            // Exercises
-            !currentPlan.rest && React.createElement('div', { 
-                key: 'exercises',
-                className: "space-y-4" 
-            }, [
-                // Exercise list
-                ...currentPlan.exercises.map((exercise, exerciseIndex) => 
-                    React.createElement('div', { 
-                        key: `exercise-${exerciseIndex}`,
-                        className: "bg-white rounded-xl shadow-md p-4" 
-                    }, [
-                        React.createElement('div', { 
-                            key: 'exerciseHeader',
-                            className: "flex justify-between items-center mb-3" 
-                        }, [
-                            React.createElement('div', { 
-                                key: 'exerciseInfo',
-                                className: "flex-1" 
-                            }, editMode ? [
-                                React.createElement('div', { 
-                                    key: 'editInputs',
-                                    className: "space-y-2" 
-                                }, [
-                                    React.createElement('input', { 
-                                        key: 'nameInput',
-                                        type: "text",
-                                        value: exercise.name,
-                                        onChange: (e) => updateExercise(exerciseIndex, 'name', e.target.value),
-                                        className: "w-full p-2 border border-gray-300 rounded-lg text-sm"
-                                    }),
-                                    React.createElement('div', { 
-                                        key: 'setsRepsInputs',
-                                        className: "flex gap-2" 
-                                    }, [
-                                        React.createElement('input', { 
-                                            key: 'setsInput',
-                                            type: "number",
-                                            value: exercise.sets,
-                                            onChange: (e) => updateExercise(exerciseIndex, 'sets', parseInt(e.target.value)),
-                                            className: "w-16 p-2 border border-gray-300 rounded-lg text-sm",
-                                            min: "1"
-                                        }),
-                                        React.createElement('input', { 
-                                            key: 'repsInput',
-                                            type: "text",
-                                            value: exercise.reps,
-                                            onChange: (e) => updateExercise(exerciseIndex, 'reps', e.target.value),
-                                            className: "flex-1 p-2 border border-gray-300 rounded-lg text-sm",
-                                            placeholder: "8-12"
-                                        })
-                                    ])
-                                ])
-                            ] : [
-                                React.createElement('h3', { 
-                                    key: 'exerciseName',
-                                    className: "font-semibold text-gray-800 text-sm" 
-                                }, exercise.name),
-                                React.createElement('span', { 
-                                    key: 'exerciseParams',
-                                    className: "text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded" 
-                                }, `${exercise.sets} Sätze × ${exercise.reps}`)
-                            ]),
-                            editMode && React.createElement('button', { 
-                                key: 'deleteButton',
-                                onClick: () => removeExercise(exerciseIndex),
-                                className: "ml-2 p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
-                            }, React.createElement(Trash2, { className: "w-4 h-4" }))
-                        ]),
-                        currentWorkout && currentWorkout.exercises[exerciseIndex] && React.createElement('div', { 
-                            key: 'sets',
-                            className: "space-y-2" 
-                        }, currentWorkout.exercises[exerciseIndex].completed.map((set, setIndex) => 
-                            React.createElement('div', { 
-                                key: `set-${setIndex}`,
-                                className: "flex items-center gap-2 p-2 border border-gray-200 rounded-lg" 
-                            }, [
-                                React.createElement('span', { 
-                                    key: 'setNumber',
-                                    className: "w-6 text-center font-medium text-gray-600 text-sm" 
-                                }, setIndex + 1),
-                                React.createElement('input', { 
-                                    key: 'weightInput',
-                                    type: "number",
-                                    placeholder: "kg",
-                                    value: set.weight,
-                                    onChange: (e) => updateSet(exerciseIndex, setIndex, 'weight', e.target.value),
-                                    className: "flex-1 p-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                }),
-                                React.createElement('input', { 
-                                    key: 'repsInput',
-                                    type: "number",
-                                    placeholder: "Wdh",
-                                    value: set.reps,
-                                    onChange: (e) => updateSet(exerciseIndex, setIndex, 'reps', e.target.value),
-                                    className: "w-16 p-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                }),
-                                React.createElement('button', { 
-                                    key: 'checkButton',
-                                    onClick: () => toggleSetComplete(exerciseIndex, setIndex),
-                                    className: `p-2 rounded-full transition-colors ${set.done ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400 hover:bg-gray-300'}`
-                                }, React.createElement(Check, { className: "w-4 h-4" }))
-                            ])
-                        ))
-                    ])
-                ),
-
-                // Add Exercise
-                editMode && React.createElement('div', { 
-                    key: 'addExercise',
-                    className: "bg-white rounded-xl shadow-md p-4" 
-                }, showAddExercise ? [
-                    React.createElement('div', { 
-                        key: 'addForm',
-                        className: "space-y-3" 
-                    }, [
-                        React.createElement('div', { 
-                            key: 'addHeader',
-                            className: "flex justify-between items-center" 
-                        }, [
-                            React.createElement('h3', { 
-                                key: 'addTitle',
-                                className: "font-semibold text-gray-800" 
-                            }, "Neue Übung"),
-                            React.createElement('button', { 
-                                key: 'closeAdd',
-                                onClick: () => setShowAddExercise(false),
-                                className: "p-1 text-gray-500 hover:bg-gray-100 rounded"
-                            }, React.createElement(X, { className: "w-4 h-4" }))
-                        ]),
-                        React.createElement('input', { 
-                            key: 'addNameInput',
-                            type: "text",
-                            placeholder: "Übungsname",
-                            value: newExercise.name,
-                            onChange: (e) => setNewExercise({...newExercise, name: e.target.value}),
-                            className: "w-full p-2 border border-gray-300 rounded-lg text-sm"
-                        }),
-                        React.createElement('div', { 
-                            key: 'addParams',
-                            className: "flex gap-2" 
-                        }, [
-                            React.createElement('input', { 
-                                key: 'addSetsInput',
-                                type: "number",
-                                placeholder: "Sätze",
-                                value: newExercise.sets,
-                                onChange: (e) => setNewExercise({...newExercise, sets: parseInt(e.target.value)}),
-                                className: "w-20 p-2 border border-gray-300 rounded-lg text-sm",
-                                min: "1"
-                            }),
-                            React.createElement('input', { 
-                                key: 'addRepsInput',
-                                type: "text",
-                                placeholder: "Wiederholungen",
-                                value: newExercise.reps,
-                                onChange: (e) => setNewExercise({...newExercise, reps: e.target.value}),
-                                className: "flex-1 p-2 border border-gray-300 rounded-lg text-sm"
-                            })
-                        ]),
-                        React.createElement('button', { 
-                            key: 'addSubmit',
-                            onClick: addExercise,
-                            className: "w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                        }, "Übung hinzufügen")
-                    ])
-                ] : [
-                    React.createElement('button', { 
-                        key: 'addButton',
-                        onClick: () => setShowAddExercise(true),
-                        className: "w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-blue-400 hover:text-blue-600 transition-colors"
-                    }, [
-                        React.createElement(Plus, { 
-                            key: 'plusIcon',
-                            className: "w-5 h-5" 
-                        }),
-                        "Übung hinzufügen"
-                    ])
-                ]),
-
-                // Cardio
-                currentPlan.cardio && React.createElement('div', { 
-                    key: 'cardio',
-                    className: "bg-white rounded-xl shadow-md p-4" 
-                }, [
-                    React.createElement('h3', { 
-                        key: 'cardioTitle',
-                        className: "font-semibold text-gray-800 mb-3 text-sm" 
-                    }, "Cardio"),
-                    editMode ? 
-                        React.createElement('input', { 
-                            key: 'cardioInput',
-                            type: "text",
-                            value: currentPlan.cardio,
-                            onChange: (e) => updateCardioText(e.target.value),
-                            className: "w-full p-2 border border-gray-300 rounded-lg text-sm mb-3"
-                        }) :
-                        React.createElement('p', { 
-                            key: 'cardioText',
-                            className: "text-gray-700 text-sm mb-3" 
-                        }, currentPlan.cardio),
-                    currentWorkout && React.createElement('div', { 
-                        key: 'cardioControls',
-                        className: "space-y-2" 
-                    }, [
-                        React.createElement('button', { 
-                            key: 'cardioButton',
-                            onClick: () => updateCardio(!currentWorkout.cardioCompleted, currentWorkout.cardioNotes),
-                            className: `w-full flex items-center justify-center gap-2 p-2 rounded-lg transition-colors text-sm ${currentWorkout.cardioCompleted ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`
-                        }, [
-                            React.createElement(Check, { 
-                                key: 'cardioCheck',
-                                className: "w-4 h-4" 
-                            }),
-                            currentWorkout.cardioCompleted ? 'Erledigt' : 'Als erledigt markieren'
-                        ]),
-                        React.createElement('textarea', { 
-                            key: 'cardioNotes',
-                            placeholder: "Cardio-Notizen",
-                            value: currentWorkout.cardioNotes,
-                            onChange: (e) => updateCardio(currentWorkout.cardioCompleted, e.target.value),
-                            className: "w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-                            rows: "2"
-                        })
-                    ])
-                ]),
-
-                // Notes
-                currentWorkout && React.createElement('div', { 
-                    key: 'notes',
-                    className: "bg-white rounded-xl shadow-md p-4" 
-                }, [
-                    React.createElement('h3', { 
-                        key: 'notesTitle',
-                        className: "font-semibold text-gray-800 mb-3 text-sm" 
-                    }, "Trainingsnotizen"),
-                    React.createElement('textarea', { 
-                        key: 'notesTextarea',
-                        placeholder: "Wie war das Training heute?",
-                        value: currentWorkout.notes,
-                        onChange: (e) => setWorkouts(prev => ({
-                            ...prev,
-                            [getWorkoutKey(selectedDate, currentDay)]: {
-                                ...prev[getWorkoutKey(selectedDate, currentDay)],
-                                notes: e.target.value
-                            }
-                        })),
-                        className: "w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-                        rows: "3"
-                    })
-                ]),
-
-                // Motivation
-                React.createElement('div', { 
-                    key: 'motivation',
-                    className: "bg-green-50 rounded-xl p-4 text-center mb-6" 
-                }, React.createElement('p', { 
-                    className: "text-green-800 font-medium text-sm" 
-                }, "💪 Keep going, Dario! Du schaffst das!"))
-            ])
-        ]);
+<script>
+    let editMode = false;
+    let currentDay = 'Montag';
+    let selectedDate = new Date().toISOString().split('T')[0];
+    
+    const defaultPlan = {
+        'Montag': {title: 'Brust & Trizeps + Bauch + Cardio', exercises: [
+            {name: 'Brustpresse', sets: 4, reps: '8-12'},
+            {name: 'Butterfly (Brust)', sets: 4, reps: '10-12'},
+            {name: 'Dips-Maschine', sets: 4, reps: '10-12'},
+            {name: 'Trizepsstrecken', sets: 3, reps: '12-15'},
+            {name: 'Bauchmaschine', sets: 4, reps: '15-20'},
+            {name: 'Plank', sets: 3, reps: '30-60s'}
+        ]},
+        'Dienstag': {title: 'Rücken & Bizeps', exercises: [
+            {name: 'Latzug breit', sets: 4, reps: '8-12'},
+            {name: 'Rudermaschine', sets: 4, reps: '8-12'},
+            {name: 'Rückenstrecker', sets: 3, reps: '12-15'},
+            {name: 'Klimmzug-Maschine', sets: 3, reps: '6-10'},
+            {name: 'Bizepscurls', sets: 4, reps: '10-12'}
+        ]},
+        'Mittwoch': {title: 'Beine + Bauch + Cardio', exercises: [
+            {name: 'Beinpresse', sets: 4, reps: '10-12'},
+            {name: 'Beinstrecker', sets: 4, reps: '10-12'},
+            {name: 'Beinbeuger', sets: 4, reps: '10-12'},
+            {name: 'Wadenheben', sets: 4, reps: '15-20'},
+            {name: 'Bauchmaschine', sets: 4, reps: '15-20'}
+        ]},
+        'Donnerstag': {title: 'Brust/Schulter + Bauch', exercises: [
+            {name: 'Brustpresse (eng)', sets: 4, reps: '8-12'},
+            {name: 'Butterfly Reverse', sets: 4, reps: '10-12'},
+            {name: 'Schulterpresse', sets: 4, reps: '8-12'},
+            {name: 'Seitheben', sets: 3, reps: '12-15'},
+            {name: 'Russian Twists', sets: 3, reps: '20'}
+        ]},
+        'Freitag': {title: 'Rücken & Bauch', exercises: [
+            {name: 'Latzug eng', sets: 4, reps: '8-12'},
+            {name: 'Rudermaschine breit', sets: 4, reps: '8-12'},
+            {name: 'Facepulls', sets: 4, reps: '12-15'},
+            {name: 'Shrugs', sets: 3, reps: '12-15'},
+            {name: 'Bizepscurls', sets: 3, reps: '10-12'}
+        ]},
+        'Samstag': {title: 'Ganzkörper + Cardio', exercises: [
+            {name: 'Beinpresse', sets: 3, reps: '12'},
+            {name: 'Brustpresse', sets: 3, reps: '12'},
+            {name: 'Latzug', sets: 3, reps: '12'},
+            {name: 'Schulterpresse', sets: 3, reps: '12'}
+        ]},
+        'Sonntag': {title: 'Ruhetag', exercises: [], rest: true}
     };
 
-    ReactDOM.render(React.createElement(WorkoutTracker), document.getElementById('root'));
+    let workoutPlan = {...defaultPlan};
+    let workouts = {};
+
+    // Load data
+    try {
+        workoutPlan = {...defaultPlan, ...JSON.parse(localStorage.getItem('workoutPlan') || '{}')};
+        workouts = JSON.parse(localStorage.getItem('workouts') || '{}');
+    } catch(e) {}
+
+    // Save data
+    function save() {
+        try {
+            localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
+            localStorage.setItem('workouts', JSON.stringify(workouts));
+        } catch(e) {}
+    }
+
+    function getKey() {
+        return `${selectedDate}-${currentDay}`;
+    }
+
+    function initWorkout() {
+        const key = getKey();
+        if (!workouts[key] && workoutPlan[currentDay] && !workoutPlan[currentDay].rest) {
+            workouts[key] = {
+                exercises: workoutPlan[currentDay].exercises.map(ex => ({
+                    ...ex,
+                    sets: Array(ex.sets).fill().map(() => ({weight: '', reps: '', done: false}))
+                })),
+                notes: ''
+            };
+            save();
+        }
+    }
+
+    function render() {
+        const plan = workoutPlan[currentDay];
+        const workout = workouts[getKey()];
+        
+        document.getElementById('title').textContent = plan.title;
+        document.getElementById('exerciseCount').textContent = `${plan.exercises.length} Übungen`;
+        
+        if (plan.rest) {
+            document.getElementById('restDay').classList.remove('hidden');
+            document.getElementById('exercises').innerHTML = '';
+            return;
+        } else {
+            document.getElementById('restDay').classList.add('hidden');
+        }
+
+        let completed = 0, total = 0;
+        if (workout) {
+            workout.exercises.forEach(ex => {
+                ex.sets.forEach(set => {
+                    total++;
+                    if (set.done) completed++;
+                });
+            });
+        }
+        document.getElementById('stats').textContent = `${completed}/${total}`;
+
+        let html = '';
+        plan.exercises.forEach((ex, i) => {
+            html += `
+            <div class="card">
+                <div class="exercise-header">
+                    ${editMode ? `
+                    <input type="text" value="${ex.name}" onchange="updateExercise(${i}, 'name', this.value)">
+                    <div class="flex" style="margin-top:8px">
+                        <input type="number" value="${ex.sets}" min="1" onchange="updateExercise(${i}, 'sets', +this.value)" style="width:60px">
+                        <input type="text" value="${ex.reps}" onchange="updateExercise(${i}, 'reps', this.value)">
+                        <button class="btn-red btn-sm" onclick="removeExercise(${i})">🗑️</button>
+                    </div>
+                    ` : `
+                    <div class="exercise-name">${ex.name}</div>
+                    <span class="exercise-info">${ex.sets} Sätze × ${ex.reps}</span>
+                    `}
+                </div>
+                ${workout ? workout.exercises[i].sets.map((set, j) => `
+                <div class="set-row">
+                    <span class="set-num">${j+1}</span>
+                    <input type="number" placeholder="kg" value="${set.weight}" onchange="updateSet(${i}, ${j}, 'weight', this.value)" style="flex:1">
+                    <input type="number" placeholder="Wdh" value="${set.reps}" onchange="updateSet(${i}, ${j}, 'reps', this.value)" style="width:60px">
+                    <button class="check-btn ${set.done ? 'checked' : 'unchecked'}" onclick="toggleSet(${i}, ${j})">✓</button>
+                </div>
+                `).join('') : ''}
+            </div>`;
+        });
+
+        if (editMode) {
+            html += `
+            <div class="card edit-mode">
+                <button onclick="showAddExercise()" style="width:100%">➕ Übung hinzufügen</button>
+            </div>`;
+        }
+
+        document.getElementById('exercises').innerHTML = html;
+    }
+
+    function updateSet(exIndex, setIndex, field, value) {
+        const key = getKey();
+        if (!workouts[key]) return;
+        workouts[key].exercises[exIndex].sets[setIndex][field] = value;
+        save();
+        render();
+    }
+
+    function toggleSet(exIndex, setIndex) {
+        const key = getKey();
+        if (!workouts[key]) return;
+        workouts[key].exercises[exIndex].sets[setIndex].done = !workouts[key].exercises[exIndex].sets[setIndex].done;
+        save();
+        render();
+    }
+
+    function updateExercise(index, field, value) {
+        workoutPlan[currentDay].exercises[index][field] = value;
+        if (field === 'sets') {
+            const key = getKey();
+            if (workouts[key]) {
+                const sets = Array(value).fill().map(() => ({weight: '', reps: '', done: false}));
+                workouts[key].exercises[index].sets = sets;
+            }
+        }
+        save();
+        render();
+    }
+
+    function removeExercise(index) {
+        workoutPlan[currentDay].exercises.splice(index, 1);
+        save();
+        render();
+    }
+
+    function addExercise() {
+        const name = document.getElementById('newName').value.trim();
+        const sets = +document.getElementById('newSets').value || 3;
+        const reps = document.getElementById('newReps').value || '8-12';
+        
+        if (name) {
+            workoutPlan[currentDay].exercises.push({name, sets, reps});
+            document.getElementById('newName').value = '';
+            document.getElementById('newSets').value = '3';
+            document.getElementById('newReps').value = '8-12';
+            document.getElementById('addExercise').classList.add('hidden');
+            save();
+            render();
+        }
+    }
+
+    function showAddExercise() {
+        document.getElementById('addExercise').classList.remove('hidden');
+    }
+
+    function toggleEdit() {
+        editMode = !editMode;
+        document.getElementById('editBtn').textContent = editMode ? '💾' : '✏️';
+        document.getElementById('addExercise').classList.add('hidden');
+        render();
+    }
+
+    function resetWorkout() {
+        const key = getKey();
+        if (workouts[key]) {
+            workouts[key].exercises.forEach(ex => {
+                ex.sets.forEach(set => {
+                    set.weight = '';
+                    set.reps = '';
+                    set.done = false;
+                });
+            });
+            save();
+            render();
+        }
+    }
+
+    // Events
+    document.getElementById('date').addEventListener('change', e => {
+        selectedDate = e.target.value;
+        initWorkout();
+        render();
+    });
+
+    document.getElementById('day').addEventListener('change', e => {
+        currentDay = e.target.value;
+        initWorkout();
+        render();
+    });
+
+    // Init
+    document.getElementById('date').value = selectedDate;
+    document.getElementById('day').value = currentDay;
+    initWorkout();
+    render();
 </script>
 ```
 
