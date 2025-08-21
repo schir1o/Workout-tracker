@@ -43,7 +43,7 @@ button:active{transform:scale(0.96)}
 .ch{width:48px;height:38px;border-radius:10px;background:#1c1c1e;border:2px solid #3a3a3c;display:grid;place-items:center;cursor:pointer;font-size:20px;transition:all .2s}
 .ch.on{background:#30D158;border-color:#30D158;color:#fff}
 .tb{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:12px;background:#1c1c1e;padding:4px;border-radius:14px}
-.ta{padding:12px 8px;background:0;border:0;color:#8E8E93;font:600 14px/1 system-ui;cursor:pointer;border-radius:10px;transition:all .2s}
+.ta{padding:12px;background:0;border:0;color:#8E8E93;font:600 15px/1 system-ui;cursor:pointer;border-radius:10px;transition:all .2s}
 .ta.a{background:#007AFF;color:#fff}
 .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
 .st{background:#2c2c2e;padding:18px;border-radius:14px;text-align:center}
@@ -90,13 +90,13 @@ textarea{resize:none;font:16px/1.4 system-ui}
 <div class="r">
 <input type="date" id="dt" inputmode="none">
 <select id="dy">
-<option>Sonntag</option>
 <option>Montag</option>
 <option>Dienstag</option>
 <option>Mittwoch</option>
 <option>Donnerstag</option>
 <option>Freitag</option>
 <option>Samstag</option>
+<option>Sonntag</option>
 </select>
 </div>
 </div>
@@ -132,15 +132,11 @@ textarea{resize:none;font:16px/1.4 system-ui}
 <div class="st"><div class="sv" id="sk">0</div><div class="sl">Streak 🔥</div></div>
 <div class="st"><div class="sv" id="tk">0</div><div class="sl">Total KG</div></div>
 </div>
-<div class="cd" style="padding:10px">
-<div class="hst" style="margin-bottom:10px">Diese Woche</div>
-<div id="wk" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+<div class="cd" style="margin-bottom:16px">
+<h3 style="font:600 16px/1 system-ui;margin-bottom:12px;color:#8E8E93">Wochenübersicht</h3>
+<div id="wv" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px"></div>
 </div>
-<div class="cd" style="padding:10px;margin-top:12px">
-<div class="hst" style="margin-bottom:10px">Letzte 4 Wochen</div>
-<div id="mw" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;font-size:10px"></div>
-</div>
-<div class="f" style="gap:10px;margin-top:12px">
+<div class="f" style="gap:10px">
 <button onclick="XP()" class="bgy">📤 Export</button>
 <button onclick="IM()" class="bgy">📥 Import</button>
 </div>
@@ -148,14 +144,12 @@ textarea{resize:none;font:16px/1.4 system-ui}
 
 <div id="g" class="h">
 <div class="cd">
-<div class="hst">Übung auswählen</div>
-<select id="ge" onchange="DG()" style="margin-top:10px">
-<option value="">-- Wähle Übung --</option>
+<h3 style="font:600 18px/1 system-ui;margin-bottom:16px">📊 Fortschritt</h3>
+<select id="es" onchange="DC()" style="margin-bottom:16px">
+<option value="">Übung wählen...</option>
 </select>
-</div>
-<div id="gc" class="cd h">
-<canvas id="cv" width="380" height="200"></canvas>
-<div id="gd" style="margin-top:10px;font-size:12px;color:#8E8E93"></div>
+<canvas id="cv" width="350" height="200" style="width:100%;border-radius:12px;background:#000"></canvas>
+<div id="gd" style="margin-top:12px;font:600 14px/1.5 system-ui;color:#8E8E93"></div>
 </div>
 </div>
 
@@ -204,8 +198,8 @@ textarea{resize:none;font:16px/1.4 system-ui}
 
 <script>
 const $=i=>document.getElementById(i),$A=s=>document.querySelectorAll(s);
-const TD=new Date(),WD=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
-let d=WD[TD.getDay()],dt=TD.toISOString().split('T')[0],em=0,ti,ts=0,v=navigator.vibrate?1:0;
+const WD=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+let d=WD[new Date().getDay()],dt=new Date().toISOString().split('T')[0],em=0,ti,ts=0,v=navigator.vibrate?1:0;
 const dp={
 Montag:{t:'🔥 Brust & Trizeps',e:[{n:'Brustpresse',s:4,r:'8-12'},{n:'Butterfly',s:4,r:'10-12'},{n:'Dips',s:4,r:'10-12'},{n:'Trizeps',s:3,r:'12-15'}]},
 Dienstag:{t:'💪 Rücken & Bizeps',e:[{n:'Latzug',s:4,r:'8-12'},{n:'Rudern',s:4,r:'8-12'},{n:'Klimmzüge',s:3,r:'6-10'},{n:'Bizeps',s:4,r:'10-12'}]},
@@ -315,97 +309,78 @@ const d=new Date(t);d.setDate(d.getDate()-i);
 if(Object.keys(w).some(k=>k.startsWith(d.toISOString().split('T')[0])))s++;else if(i)break
 }
 $('sk').textContent=s;
-// Wochenansicht
+// Wochenübersicht
+const td=new Date(),wd=td.getDay(),ms=new Date(td);
+ms.setDate(td.getDate()-(wd||7)+1);
 let wh='';
-const sd=new Date(dt);
-sd.setDate(sd.getDate()-sd.getDay()+1);
 for(let i=0;i<7;i++){
-const cd=new Date(sd);
-cd.setDate(sd.getDate()+i);
-const dk=cd.toISOString().split('T')[0];
-const wd=WD[cd.getDay()];
-const hw=Object.keys(w).some(k=>k.startsWith(dk));
-const it=dk==dt;
-wh+=`<div style="background:${hw?'#30D158':it?'#007AFF':'#2c2c2e'};color:${hw||it?'#fff':'#8E8E93'};padding:12px 4px;border-radius:8px;text-align:center;font:600 11px/1.2 system-ui">${wd.substr(0,2)}<br>${cd.getDate()}</div>`;
+const cd=new Date(ms);
+cd.setDate(ms.getDate()+i);
+const ds=cd.toISOString().split('T')[0];
+const dw=WD[cd.getDay()];
+const hw=Object.keys(w).some(k=>k==`${ds}-${dw}`);
+const it=ds==dt;
+wh+=`<div style="background:${hw?'#30D158':it?'#007AFF':'#2c2c2e'};color:${hw||it?'#fff':'#8E8E93'};padding:12px 4px;border-radius:8px;text-align:center;font:600 11px/1.2 system-ui">${dw.substr(0,2)}<br>${cd.getDate()}</div>`
 }
-$('wk').innerHTML=wh;
-// 4 Wochen Übersicht
-let mh='';
-const sw=new Date();
-sw.setDate(sw.getDate()-28);
-for(let w=0;w<4;w++){
-for(let d=0;d<7;d++){
-const cd=new Date(sw);
-cd.setDate(sw.getDate()+w*7+d);
-const dk=cd.toISOString().split('T')[0];
-const hw=Object.keys(w).some(k=>k.startsWith(dk));
-mh+=`<div style="background:${hw?'#30D158':'#2c2c2e'};height:20px;border-radius:3px"></div>`;
-}
-}
-$('mw').innerHTML=mh;
+$('wv').innerHTML=wh
 },
 SG=_=>{
+// Sammle alle Übungen
 const ex=new Set();
 Object.values(p).forEach(d=>d.e?.forEach(e=>ex.add(e.n)));
-let o='<option value="">-- Wähle Übung --</option>';
-[...ex].sort().forEach(e=>o+=`<option value="${e}">${e}</option>`);
-$('ge').innerHTML=o;
-$('gc').classList.add('h');
+let o='<option value="">Übung wählen...</option>';
+ex.forEach(e=>o+=`<option value="${e}">${e}</option>`);
+$('es').innerHTML=o;
+DC()
 },
-DG=_=>{
-const en=$('ge').value;
-if(!en)return $('gc').classList.add('h');
-$('gc').classList.remove('h');
+DC=_=>{
+const en=$('es').value;
+if(!en){$('cv').getContext('2d').clearRect(0,0,350,200);$('gd').innerHTML='';return}
+// Sammle Daten für Übung
 const data=[];
 Object.keys(w).sort().forEach(k=>{
 const[dt,dy]=k.split('-');
 w[k].e?.forEach(e=>{
 if(e.n==en){
-e.s.forEach(s=>{
-if(s.d&&s.w)data.push({d:dt,w:+s.w,r:+s.r||0});
-});
+const mx=Math.max(...e.s.filter(s=>s.w&&s.d).map(s=>+s.w||0));
+if(mx>0)data.push({d:dt,w:mx})
 }
+})
 });
-});
-if(!data.length)return $('gd').textContent='Keine Daten verfügbar';
-// Canvas Graph
-const cv=$('cv'),ctx=cv.getContext('2d');
-ctx.clearRect(0,0,380,200);
+if(!data.length){$('gd').innerHTML='Keine Daten vorhanden';return}
+// Zeichne Grafik
+const c=$('cv'),ctx=c.getContext('2d');
+ctx.clearRect(0,0,350,200);
 const mx=Math.max(...data.map(d=>d.w)),mn=Math.min(...data.map(d=>d.w));
-const px=340/Math.max(data.length-1,1),py=160/(mx-mn||1);
+const pd=20,w=(350-pd*2)/data.length,h=200-pd*2;
 // Grid
-ctx.strokeStyle='#3a3a3c';
-ctx.lineWidth=0.5;
+ctx.strokeStyle='#2c2c2e';
+ctx.lineWidth=1;
 for(let i=0;i<=4;i++){
-ctx.beginPath();
-ctx.moveTo(20,20+i*40);
-ctx.lineTo(360,20+i*40);
-ctx.stroke();
+const y=pd+h*i/4;
+ctx.beginPath();ctx.moveTo(pd,y);ctx.lineTo(350-pd,y);ctx.stroke();
+ctx.fillStyle='#8E8E93';ctx.font='10px system-ui';
+ctx.fillText(~~(mx-i*(mx-mn)/4)+'kg',2,y+3)
 }
-// Data line
-ctx.strokeStyle='#007AFF';
-ctx.lineWidth=2;
+// Linie
+ctx.strokeStyle='#007AFF';ctx.lineWidth=2;
 ctx.beginPath();
 data.forEach((d,i)=>{
-const x=20+i*px,y=180-(d.w-mn)*py;
-i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+const x=pd+i*w+w/2,y=pd+h*(1-(d.w-mn)/(mx-mn||1));
+i?ctx.lineTo(x,y):ctx.moveTo(x,y)
 });
 ctx.stroke();
-// Points
-ctx.fillStyle='#007AFF';
+// Punkte
 data.forEach((d,i)=>{
-const x=20+i*px,y=180-(d.w-mn)*py;
-ctx.beginPath();
-ctx.arc(x,y,4,0,Math.PI*2);
-ctx.fill();
+const x=pd+i*w+w/2,y=pd+h*(1-(d.w-mn)/(mx-mn||1));
+ctx.fillStyle='#007AFF';ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#fff';ctx.font='10px system-ui';
+ctx.fillText(d.w+'kg',x-10,y-8)
 });
-// Labels
-ctx.fillStyle='#8E8E93';
-ctx.font='10px system-ui';
-ctx.fillText(mx+'kg',2,25);
-ctx.fillText(mn+'kg',2,185);
-$('gd').innerHTML=`<strong>Fortschritt:</strong> ${mn}kg → ${mx}kg (${mx>mn?'+':''}${(mx-mn).toFixed(1)}kg)<br>
-<strong>Einträge:</strong> ${data.length} | <strong>Durchschnitt:</strong> ${(data.reduce((a,d)=>a+d.w,0)/data.length).toFixed(1)}kg`;
+// Info
+const df=data[data.length-1].w-data[0].w;
+$('gd').innerHTML=`Start: ${data[0].w}kg → Aktuell: ${data[data.length-1].w}kg<br>
+<span style="color:${df>0?'#30D158':'#FF3B30'}">Fortschritt: ${df>0?'+':''}${df}kg (${df>0?'↑':'↓'}${~~(Math.abs(df)/data[0].w*100)}%)</span>`
 },
 SH=_=>{
 const k=Object.keys(w).sort().reverse();
@@ -434,8 +409,7 @@ f.readAsText(e.target.files[0])
 
 $('dt').addEventListener('change',e=>{
 dt=e.target.value;
-const nd=new Date(dt);
-d=WD[nd.getDay()];
+d=WD[new Date(dt+'T12:00').getDay()];
 $('dy').value=d;
 IW();R()
 });
