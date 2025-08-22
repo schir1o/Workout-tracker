@@ -1106,7 +1106,6 @@ modal.innerHTML=`
 <button class="x" onclick="this.closest('.m').classList.remove('o')">×</button>
 </div>
 <p style="color:#8E8E93;margin-bottom:16px">Automatische Synchronisation mit deinem GitHub Repository</p>
-<p style="color:#FF9500;font-size:14px;margin-bottom:16px">⚠️ Tipp: Erstelle ein separates Repository "gym-data" ohne GitHub Pages für bessere Performance!</p>
 <div class="fg">
 <label class="l">GitHub Token</label>
 <input id="gh-token" type="password" placeholder="ghp_..." value="${localStorage.getItem('ghToken')||''}" autocomplete="off">
@@ -1117,37 +1116,13 @@ modal.innerHTML=`
 </div>
 <div class="fg">
 <label class="l">Repository</label>
-<input id="gh-repo" placeholder="z.B. gym-data" value="${localStorage.getItem('ghRepo')||'gym-data'}" autocomplete="off">
+<input id="gh-repo" placeholder="z.B. Workout-tracker" value="${localStorage.getItem('ghRepo')||'Workout-tracker'}" autocomplete="off">
 </div>
 <button onclick="CSave()" style="width:100%;padding:16px;font-size:17px;margin-bottom:10px">💾 Speichern & Aktivieren</button>
 ${localStorage.getItem('ghToken')?'<button onclick="GHL()" style="width:100%;padding:16px;font-size:17px;margin-bottom:10px" class="bg">📥 Von GitHub laden</button>':''}
-${localStorage.getItem('ghToken')?'<button onclick="TestGH()" style="width:100%;padding:16px;font-size:17px;margin-bottom:10px" class="bgy">🔧 Verbindung testen</button>':''}
 ${localStorage.getItem('ghToken')?'<button onclick="CSD()" style="width:100%;padding:16px;font-size:17px" class="br">🗑️ Deaktivieren</button>':''}
 </div>`;
 document.body.appendChild(modal);
-}
-
-async function TestGH(){
-const token=localStorage.getItem('ghToken');
-const user=localStorage.getItem('ghUser');
-const repo=localStorage.getItem('ghRepo')||'gym-data';
-
-try{
-const res=await fetch(`https://api.github.com/repos/${user}/${repo}`,{
-headers:{'Authorization':`token ${token}`}
-});
-if(res.ok){
-alert('✅ Verbindung erfolgreich!\n\nRepository gefunden und Token funktioniert.');
-}else if(res.status===404){
-alert('⚠️ Repository nicht gefunden!\n\nBitte erstelle zuerst das Repository auf GitHub.');
-}else if(res.status===401){
-alert('❌ Token ungültig!\n\nBitte prüfe deinen GitHub Token.');
-}else{
-alert('❌ Fehler: '+res.status);
-}
-}catch(e){
-alert('❌ Verbindungsfehler!\n\n'+e.message);
-}
 }
 
 function CSave(){
@@ -1192,8 +1167,7 @@ try{
 const jsonStr=JSON.stringify({p,w,v:3,updated:new Date().toISOString()});
 const data=btoa(unescape(encodeURIComponent(jsonStr)));
 const sha=await GHSHA();
-// Speichere in data/ Ordner statt root
-const url=`https://api.github.com/repos/${user}/${repo}/contents/data/data.json`;
+const url=`https://api.github.com/repos/${user}/${repo}/contents/data.json`;
 const res=await fetch(url,{
 method:'PUT',
 headers:{
@@ -1212,25 +1186,6 @@ showToast('☁️ Gespeichert');
 return true;
 }else{
 console.error('GitHub save failed:',res.status,await res.text());
-// Wenn 404, erstelle die Datei neu
-if(res.status===404){
-const createRes=await fetch(url,{
-method:'PUT',
-headers:{
-'Authorization':`token ${token}`,
-'Content-Type':'application/json'
-},
-body:JSON.stringify({
-message:`Create: ${new Date().toLocaleString('de-DE')}`,
-content:data
-})
-});
-if(createRes.ok){
-console.log('✅ Created new file on GitHub');
-showToast('☁️ Neue Datei erstellt');
-return true;
-}
-}
 return false;
 }
 }catch(e){
@@ -1244,8 +1199,7 @@ const token=localStorage.getItem('ghToken');
 const user=localStorage.getItem('ghUser');
 const repo=localStorage.getItem('ghRepo')||'Workout-tracker';
 try{
-// Hole SHA von data/ Ordner
-const url=`https://api.github.com/repos/${user}/${repo}/contents/data/data.json`;
+const url=`https://api.github.com/repos/${user}/${repo}/contents/data.json`;
 const res=await fetch(url,{
 headers:{'Authorization':`token ${token}`}
 });
@@ -1264,8 +1218,7 @@ const repo=localStorage.getItem('ghRepo')||'Workout-tracker';
 if(!token||!user)return;
 
 try{
-// Lade von data/ Ordner
-const url=`https://api.github.com/repos/${user}/${repo}/contents/data/data.json`;
+const url=`https://api.github.com/repos/${user}/${repo}/contents/data.json`;
 const res=await fetch(url,{
 headers:{'Authorization':`token ${token}`}
 });
@@ -1278,15 +1231,14 @@ if(content.p)p=content.p;
 if(content.w)w=content.w;
 localStorage.setItem('p',JSON.stringify(p));
 localStorage.setItem('w',JSON.stringify(w));
+// Kein location.reload() mehr!
 R();
-if(!document.getElementById('s').classList.contains('h')){
+if(document.getElementById('s').classList.contains('h')){
+// Nur wenn Stats Tab aktiv ist, aktualisieren
+}else{
 SS();
 }
 showToast('☁️ Von GitHub geladen');
-}else if(res.status===404){
-console.log('Keine Daten auf GitHub gefunden - erstelle neue');
-// Erstelle neue Datei mit aktuellen lokalen Daten
-GHS();
 }else{
 console.error('GitHub load failed:',res.status);
 }
