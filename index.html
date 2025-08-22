@@ -1090,7 +1090,12 @@ if(token&&user&&repo){
 localStorage.setItem('ghToken',token);
 localStorage.setItem('ghUser',user);
 localStorage.setItem('ghRepo',repo);
-GHS();
+// Erst speichern, dann laden um zu synchronisieren
+GHS().then(()=>{
+setTimeout(()=>{
+GHL(); // Lade aktuelle Daten von GitHub
+},1000);
+});
 alert('✅ GitHub Sync aktiviert!');
 document.querySelector('.m.o').classList.remove('o');
 setTimeout(()=>document.querySelector('.m').remove(),300);
@@ -1176,16 +1181,21 @@ const jsonStr=decodeURIComponent(escape(atob(data.content)));
 const content=JSON.parse(jsonStr);
 if(content.p)p=content.p;
 if(content.w)w=content.w;
-S();
+localStorage.setItem('p',JSON.stringify(p));
+localStorage.setItem('w',JSON.stringify(w));
+// Kein location.reload() mehr!
 R();
-alert('✅ Von GitHub geladen!');
-location.reload();
+if(document.getElementById('s').classList.contains('h')){
+// Nur wenn Stats Tab aktiv ist, aktualisieren
+}else{
+SS();
+}
+showToast('☁️ Von GitHub geladen');
 }else{
 console.error('GitHub load failed:',res.status);
 }
 }catch(e){
 console.log('GitHub load error:',e);
-alert('❌ Fehler beim Laden');
 }
 }
 
@@ -1199,8 +1209,9 @@ setTimeout(()=>toast.remove(),2000);
 
 // Init
 L();
-// Auto-load from GitHub on start
-if(localStorage.getItem('ghToken')){
+// Auto-load from GitHub on start (nur einmal!)
+if(localStorage.getItem('ghToken') && !sessionStorage.getItem('ghLoaded')){
+sessionStorage.setItem('ghLoaded','1');
 GHL();
 }
 FD();
