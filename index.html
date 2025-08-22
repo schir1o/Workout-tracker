@@ -20,7 +20,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .p svg{transform:rotate(-90deg)}
 .pt{position:absolute;inset:0;display:grid;place-items:center;font:600 12px/1 system-ui}
 .r{display:flex;gap:8px;margin-top:16px;align-items:center;justify-content:center}
-.arrow{width:40px;height:40px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:20px;display:grid;place-items:center;cursor:pointer}
+.arrow{width:40px;height:40px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .arrow:active{transform:scale(0.9)}
 input,select,button,textarea{width:100%;padding:14px;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:12px;color:#fff;font-size:17px;-webkit-appearance:none}
 button{background:#007AFF;border:0;font-weight:600;cursor:pointer;transition:transform .1s}
@@ -98,7 +98,8 @@ textarea{resize:none;font:16px/1.4 system-ui}
 .tplb:active{transform:scale(0.95)}
 .tplb span{display:block;font-size:24px;margin-bottom:4px}
 .tplb small{color:#8E8E93;font-size:12px}
-.dt-display{padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;text-align:center;font:600 15px/1 system-ui}
+.dt-display{padding:12px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;text-align:center;font:600 15px/1 system-ui;cursor:pointer;transition:all .2s}
+.dt-display:active{transform:scale(0.98);background:rgba(255,255,255,0.08)}
 .sup{vertical-align:super;font-size:0.7em;margin-left:2px}
 .rpe{width:60px;padding:8px;background:#000;border:1px solid #3a3a3c;border-radius:8px;text-align:center;font:600 14px/1 system-ui}
 .rpe:focus{border-color:#007AFF}
@@ -119,9 +120,9 @@ textarea{resize:none;font:16px/1.4 system-ui}
 </div>
 </div>
 <div class="r">
-<button class="arrow" onclick="CD(-1)">←</button>
-<div class="dt-display" id="dtd"></div>
-<button class="arrow" onclick="CD(1)">→</button>
+<button class="arrow" onclick="CD(-1)" title="Vorheriger Tag">←</button>
+<div class="dt-display" id="dtd" onclick="SD()" title="Datum auswählen"></div>
+<button class="arrow" onclick="CD(1)" title="Nächster Tag">→</button>
 </div>
 </div>
 
@@ -217,7 +218,7 @@ textarea{resize:none;font:16px/1.4 system-ui}
 </div>
 </div>
 
-<div class="fab h" id="fb" onclick="$('am').classList.add('o')">➕</div>
+<div class="fab h" id="fb" onclick="$('am').classList.add('o')" title="Neue Übung hinzufügen">➕</div>
 
 <div class="ti" id="ti">
 <div class="tt" id="tt">00:00</div>
@@ -996,7 +997,7 @@ input.click();
 };
 
 // Events
-$('dtd').addEventListener('click',()=>{
+const SD=()=>{
 const input=document.createElement('input');
 input.type='date';
 input.value=dt;
@@ -1007,7 +1008,7 @@ IW();
 R();
 };
 input.click();
-});
+};
 
 // Swipe Detection für Tab-Navigation
 let touchStartX=0,touchEndX=0;
