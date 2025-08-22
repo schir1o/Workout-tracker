@@ -455,7 +455,22 @@ setTimeout(()=>e.remove(),1000);
 
 function US(i,j,f,v){
 const k=K();
-if(w[k]&&w[k].e&&w[k].e[i]&&w[k].e[i].s[j]){
+// Stelle sicher, dass die Datenstruktur existiert
+if(!w[k])w[k]={e:[],n:'',st:Date.now()};
+if(!w[k].e[i]){
+const P=p[d];
+if(P.e[i]){
+w[k].e[i]={
+n:P.e[i].n,
+s:Array(P.e[i].s).fill().map(()=>({w:'',r:'',d:0})),
+mg:P.e[i].mg
+};
+}
+}
+if(w[k].e[i]&&!w[k].e[i].s[j]){
+w[k].e[i].s[j]={w:'',r:'',d:0};
+}
+if(w[k].e[i]&&w[k].e[i].s[j]){
 w[k].e[i].s[j][f]=v;
 S();
 R();
@@ -464,7 +479,19 @@ R();
 
 function TG(i,j){
 const k=K();
-if(w[k]&&w[k].e&&w[k].e[i]&&w[k].e[i].s[j]){
+// Stelle sicher, dass die Datenstruktur existiert
+if(!w[k])w[k]={e:[],n:'',st:Date.now()};
+if(!w[k].e[i]){
+const P=p[d];
+if(P.e[i]){
+w[k].e[i]={
+n:P.e[i].n,
+s:Array(P.e[i].s).fill().map(()=>({w:'',r:'',d:0})),
+mg:P.e[i].mg
+};
+}
+}
+if(w[k].e[i]&&w[k].e[i].s[j]){
 w[k].e[i].s[j].d=!w[k].e[i].s[j].d;
 V();
 S();
@@ -1079,6 +1106,7 @@ modal.innerHTML=`
 <button class="x" onclick="this.closest('.m').classList.remove('o')">×</button>
 </div>
 <p style="color:#8E8E93;margin-bottom:16px">Automatische Synchronisation mit deinem GitHub Repository</p>
+<p style="color:#FF9500;font-size:14px;margin-bottom:16px">⚠️ Tipp: Erstelle ein separates Repository "gym-data" ohne GitHub Pages für bessere Performance!</p>
 <div class="fg">
 <label class="l">GitHub Token</label>
 <input id="gh-token" type="password" placeholder="ghp_..." value="${localStorage.getItem('ghToken')||''}" autocomplete="off">
@@ -1089,13 +1117,37 @@ modal.innerHTML=`
 </div>
 <div class="fg">
 <label class="l">Repository</label>
-<input id="gh-repo" placeholder="z.B. Workout-tracker" value="${localStorage.getItem('ghRepo')||'Workout-tracker'}" autocomplete="off">
+<input id="gh-repo" placeholder="z.B. gym-data" value="${localStorage.getItem('ghRepo')||'gym-data'}" autocomplete="off">
 </div>
 <button onclick="CSave()" style="width:100%;padding:16px;font-size:17px;margin-bottom:10px">💾 Speichern & Aktivieren</button>
 ${localStorage.getItem('ghToken')?'<button onclick="GHL()" style="width:100%;padding:16px;font-size:17px;margin-bottom:10px" class="bg">📥 Von GitHub laden</button>':''}
+${localStorage.getItem('ghToken')?'<button onclick="TestGH()" style="width:100%;padding:16px;font-size:17px;margin-bottom:10px" class="bgy">🔧 Verbindung testen</button>':''}
 ${localStorage.getItem('ghToken')?'<button onclick="CSD()" style="width:100%;padding:16px;font-size:17px" class="br">🗑️ Deaktivieren</button>':''}
 </div>`;
 document.body.appendChild(modal);
+}
+
+async function TestGH(){
+const token=localStorage.getItem('ghToken');
+const user=localStorage.getItem('ghUser');
+const repo=localStorage.getItem('ghRepo')||'gym-data';
+
+try{
+const res=await fetch(`https://api.github.com/repos/${user}/${repo}`,{
+headers:{'Authorization':`token ${token}`}
+});
+if(res.ok){
+alert('✅ Verbindung erfolgreich!\n\nRepository gefunden und Token funktioniert.');
+}else if(res.status===404){
+alert('⚠️ Repository nicht gefunden!\n\nBitte erstelle zuerst das Repository auf GitHub.');
+}else if(res.status===401){
+alert('❌ Token ungültig!\n\nBitte prüfe deinen GitHub Token.');
+}else{
+alert('❌ Fehler: '+res.status);
+}
+}catch(e){
+alert('❌ Verbindungsfehler!\n\n'+e.message);
+}
 }
 
 function CSave(){
@@ -1150,7 +1202,7 @@ headers:{
 body:JSON.stringify({
 message:`Update: ${new Date().toLocaleString('de-DE')}`,
 content:data,
-sha:sha
+sha:sha||undefined // Wichtig: undefined statt null für neue Datei
 })
 });
 if(res.ok){
@@ -1158,7 +1210,7 @@ console.log('✅ Saved to GitHub');
 showToast('☁️ Gespeichert');
 return true;
 }else{
-console.error('GitHub save failed:',res.status,await res.text());
+console.error('GitHub save failed:',res.status);
 return false;
 }
 }catch(e){
@@ -1204,14 +1256,16 @@ if(content.p)p=content.p;
 if(content.w)w=content.w;
 localStorage.setItem('p',JSON.stringify(p));
 localStorage.setItem('w',JSON.stringify(w));
-// Kein location.reload() mehr!
 R();
-if(document.getElementById('s').classList.contains('h')){
-// Nur wenn Stats Tab aktiv ist, aktualisieren
-}else{
+if(!document.getElementById('s').classList.contains('h')){
 SS();
 }
 showToast('☁️ Von GitHub geladen');
+}else if(res.status===404){
+console.log('Keine data.json gefunden - erstelle neue');
+showToast('📝 Neue Sync-Datei wird erstellt');
+// Speichere aktuelle lokale Daten
+GHS();
 }else{
 console.error('GitHub load failed:',res.status);
 }
