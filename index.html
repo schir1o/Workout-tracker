@@ -336,12 +336,13 @@ SM=()=>$('mot').textContent=MQ[Math.floor(Math.random()*MQ.length)],
 FD=()=>{
 const date=new Date(dt+'T12:00');
 const day=WD[date.getDay()];
+d=day;
 const mo=MO[date.getDay()===0?6:date.getDay()-1];
 const dd=date.getDate();
 const mm=date.getMonth()+1;
 const yy=date.getFullYear();
 $('dtd').innerHTML=`${mo}, ${dd}.${mm<10?'0'+mm:mm}.${yy}`;
-$('dti').value=dt;
+if($('dti'))$('dti').value=dt;
 return day;
 },
 CD=n=>{
