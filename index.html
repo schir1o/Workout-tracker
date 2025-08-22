@@ -1192,7 +1192,8 @@ try{
 const jsonStr=JSON.stringify({p,w,v:3,updated:new Date().toISOString()});
 const data=btoa(unescape(encodeURIComponent(jsonStr)));
 const sha=await GHSHA();
-const url=`https://api.github.com/repos/${user}/${repo}/contents/data.json`;
+// Speichere in data/ Ordner statt root
+const url=`https://api.github.com/repos/${user}/${repo}/contents/data/data.json`;
 const res=await fetch(url,{
 method:'PUT',
 headers:{
@@ -1202,7 +1203,7 @@ headers:{
 body:JSON.stringify({
 message:`Update: ${new Date().toLocaleString('de-DE')}`,
 content:data,
-sha:sha||undefined // Wichtig: undefined statt null für neue Datei
+sha:sha
 })
 });
 if(res.ok){
@@ -1210,7 +1211,26 @@ console.log('✅ Saved to GitHub');
 showToast('☁️ Gespeichert');
 return true;
 }else{
-console.error('GitHub save failed:',res.status);
+console.error('GitHub save failed:',res.status,await res.text());
+// Wenn 404, erstelle die Datei neu
+if(res.status===404){
+const createRes=await fetch(url,{
+method:'PUT',
+headers:{
+'Authorization':`token ${token}`,
+'Content-Type':'application/json'
+},
+body:JSON.stringify({
+message:`Create: ${new Date().toLocaleString('de-DE')}`,
+content:data
+})
+});
+if(createRes.ok){
+console.log('✅ Created new file on GitHub');
+showToast('☁️ Neue Datei erstellt');
+return true;
+}
+}
 return false;
 }
 }catch(e){
@@ -1224,7 +1244,8 @@ const token=localStorage.getItem('ghToken');
 const user=localStorage.getItem('ghUser');
 const repo=localStorage.getItem('ghRepo')||'Workout-tracker';
 try{
-const url=`https://api.github.com/repos/${user}/${repo}/contents/data.json`;
+// Hole SHA von data/ Ordner
+const url=`https://api.github.com/repos/${user}/${repo}/contents/data/data.json`;
 const res=await fetch(url,{
 headers:{'Authorization':`token ${token}`}
 });
@@ -1243,7 +1264,8 @@ const repo=localStorage.getItem('ghRepo')||'Workout-tracker';
 if(!token||!user)return;
 
 try{
-const url=`https://api.github.com/repos/${user}/${repo}/contents/data.json`;
+// Lade von data/ Ordner
+const url=`https://api.github.com/repos/${user}/${repo}/contents/data/data.json`;
 const res=await fetch(url,{
 headers:{'Authorization':`token ${token}`}
 });
@@ -1262,9 +1284,8 @@ SS();
 }
 showToast('☁️ Von GitHub geladen');
 }else if(res.status===404){
-console.log('Keine data.json gefunden - erstelle neue');
-showToast('📝 Neue Sync-Datei wird erstellt');
-// Speichere aktuelle lokale Daten
+console.log('Keine Daten auf GitHub gefunden - erstelle neue');
+// Erstelle neue Datei mit aktuellen lokalen Daten
 GHS();
 }else{
 console.error('GitHub load failed:',res.status);
