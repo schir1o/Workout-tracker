@@ -121,7 +121,8 @@ textarea{resize:none;font:16px/1.4 system-ui}
 </div>
 <div class="r">
 <button class="arrow" onclick="CD(-1)" title="Vorheriger Tag">←</button>
-<div class="dt-display" id="dtd" onclick="SD()" title="Datum auswählen"></div>
+<input type="date" id="dti" style="position:absolute;opacity:0;pointer-events:none" onchange="DTC(this.value)">
+<label for="dti" class="dt-display" id="dtd" title="Datum auswählen"></label>
 <button class="arrow" onclick="CD(1)" title="Nächster Tag">→</button>
 </div>
 </div>
@@ -329,6 +330,7 @@ const dd=date.getDate();
 const mm=date.getMonth()+1;
 const yy=date.getFullYear();
 $('dtd').innerHTML=`${mo}, ${dd}.${mm<10?'0'+mm:mm}.${yy}`;
+$('dti').value=dt;
 return day;
 },
 CD=n=>{
