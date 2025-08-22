@@ -1,4 +1,9 @@
-<!DOCTYPE html>
+S=()=>{
+try{
+localStorage.setItem('p',JSON.stringify(p));
+localStorage.setItem('w',JSON.stringify(w));
+// Auto-save to GitHub if configured (mit Debouncing)
+if(localStorage.<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -98,7 +103,7 @@ textarea{resize:none;font:16px/1.4 system-ui}
 .tplb:active{transform:scale(0.95)}
 .tplb span{display:block;font-size:24px;margin-bottom:4px}
 .tplb small{color:#8E8E93;font-size:12px}
-.dt-display{padding:12px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;text-align:center;font:600 15px/1 system-ui;cursor:pointer;transition:all .2s}
+.dt-display{padding:12px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;text-align:center;font:600 15px/1 system-ui;cursor:pointer;transition:all .2s;display:block}
 .dt-display:active{transform:scale(0.98);background:rgba(255,255,255,0.08)}
 .sup{vertical-align:super;font-size:0.7em;margin-left:2px}
 .rpe{width:60px;padding:8px;background:#000;border:1px solid #3a3a3c;border-radius:8px;text-align:center;font:600 14px/1 system-ui}
@@ -187,6 +192,7 @@ textarea{resize:none;font:16px/1.4 system-ui}
 <div class="f" style="gap:10px;margin-top:16px">
 <button onclick="XP()" class="bgy">📤 Export</button>
 <button onclick="IM()" class="bgy">📥 Import</button>
+<button onclick="CS()" class="bg">☁️ Cloud Setup</button>
 <button onclick="RST()" class="br">🗑️ Reset</button>
 </div>
 </div>
@@ -283,7 +289,7 @@ legs:{e:[{n:'Kniebeugen',s:4,r:'8-12',mg:'Beine'},{n:'Beinpresse',s:4,r:'10-12',
 full:{e:[{n:'Kniebeugen',s:3,r:'10',mg:'Beine'},{n:'Bankdrücken',s:3,r:'10',mg:'Brust'},{n:'Klimmzüge',s:3,r:'8',mg:'Rücken'},{n:'Schulterpresse',s:3,r:'10',mg:'Schultern'},{n:'Plank',s:3,r:'60s',mg:'Bauch'}]}
 };
 
-let d=WD[new Date().getDay()],dt=new Date().toISOString().split('T')[0],em=0,ti,ts=0,v=navigator.vibrate?1:0,wo=0,cf='';
+let d=WD[new Date().getDay()],dt=new Date().toISOString().split('T')[0],em=0,ti,ts=0,v=navigator.vibrate?1:0,wo=0,cf='',gist=null;
 const dp={
 Montag:{t:'🔥 Brust & Trizeps',e:[{n:'Brustpresse',s:4,r:'8-12',mg:'Brust'},{n:'Butterfly',s:4,r:'10-12',mg:'Brust'},{n:'Dips',s:4,r:'10-12',mg:'Brust'},{n:'Trizeps',s:3,r:'12-15',mg:'Arme'}]},
 Dienstag:{t:'💪 Rücken & Bizeps',e:[{n:'Latzug',s:4,r:'8-12',mg:'Rücken'},{n:'Rudern',s:4,r:'8-12',mg:'Rücken'},{n:'Klimmzüge',s:3,r:'6-10',mg:'Rücken'},{n:'Bizeps',s:4,r:'10-12',mg:'Arme'}]},
@@ -304,12 +310,19 @@ Object.keys(parsed).forEach(k=>{if(dp[k])p[k]=parsed[k]});
 }
 const sw=localStorage.getItem('w');
 if(sw)w=JSON.parse(sw);
+gist=localStorage.getItem('gist');
+// Auto-load from cloud if configured
+if(gist&&navigator.onLine){
+CLoad();
+}
 }catch(e){console.log('Load error:',e)}
 },
 S=()=>{
 try{
 localStorage.setItem('p',JSON.stringify(p));
 localStorage.setItem('w',JSON.stringify(w));
+// Auto-save to GitHub if configured
+if(localStorage.getItem('ghToken'))GHSave();
 }catch(e){console.log('Save error:',e)}
 },
 K=()=>`${dt}-${d}`,
@@ -964,13 +977,23 @@ location.reload();
 },
 XP=()=>{
 const exportData={p,w,v:2,d:new Date()};
-const blob=new Blob([JSON.stringify(exportData,null,2)],{type:'application/json'});
+const dataStr=JSON.stringify(exportData,null,2);
+const blob=new Blob([dataStr],{type:'application/json'});
 const url=URL.createObjectURL(blob);
 const a=document.createElement('a');
 a.href=url;
 a.download=`gym-backup-${new Date().toISOString().split('T')[0]}.json`;
 a.click();
 URL.revokeObjectURL(url);
+// Zusätzlich: Link zum Teilen generieren
+const shareData=btoa(encodeURIComponent(dataStr));
+if(navigator.share&&shareData.length<100000){
+navigator.share({
+title:'Gym Backup',
+text:`Backup vom ${new Date().toLocaleDateString()}`,
+files:[new File([blob],a.download,{type:'application/json'})]
+}).catch(()=>{});
+}
 V([20,40,20]);
 },
 IM=()=>{
@@ -996,20 +1019,76 @@ alert('Fehler beim Import: '+err.message);
 reader.readAsText(e.target.files[0]);
 };
 input.click();
-};
+},
+CS=()=>{
+const modal=document.createElement('div');
+modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+modal.innerHTML=`
+<div style="background:#1c1c1e;border-radius:20px;padding:24px;max-width:400px;width:100%">
+<h3 style="font:600 20px/1 system-ui;margin-bottom:20px">☁️ GitHub Sync Setup</h3>
+<p style="color:#8E8E93;margin-bottom:16px">1. Gehe zu GitHub → Settings → Developer Settings → Personal Access Tokens<br>2. Erstelle Token mit "repo" Rechten<br>3. Erstelle Repository "gym-data"</p>
+<input id="gh-token" type="password" placeholder="GitHub Token" value="${localStorage.getItem('ghToken')||''}" style="width:100%;padding:14px;background:#000;border:1px solid #3a3a3c;border-radius:8px;color:#fff;margin-bottom:12px">
+<input id="gh-user" placeholder="GitHub Username" value="${localStorage.getItem('ghUser')||''}" style="width:100%;padding:14px;background:#000;border:1px solid #3a3a3c;border-radius:8px;color:#fff;margin-bottom:12px">
+<button onclick="GHSave()" style="width:100%;padding:14px;background:#007AFF;border:0;border-radius:8px;color:#fff;font:600 16px/1 system-ui">Speichern & Sync</button>
+<button onclick="this.parentElement.remove()" style="width:100%;margin-top:10px;padding:14px;background:#5A5A5E;border:0;border-radius:8px;color:#fff">Abbrechen</button>
+</div>`;
+document.body.appendChild(modal);
+},
+GHSave=async()=>{
+const token=$('gh-token')?.value||localStorage.getItem('ghToken');
+const user=$('gh-user')?.value||localStorage.getItem('ghUser');
+if(!token||!user)return;
+localStorage.setItem('ghToken',token);
+localStorage.setItem('ghUser',user);
+const data=btoa(JSON.stringify({p,w,v:3,d:new Date()}));
+try{
+await fetch(`https://api.github.com/repos/${user}/Workout-tracker/contents/data.json`,{
+method:'PUT',
+headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},
+body:JSON.stringify({message:'Update gym data',content:data,sha:await GHGetSHA()})
+});
+if($('gh-token'))alert('Gespeichert in GitHub!');
+if($('gh-token'))document.querySelector('[onclick*="GHSave"]').parentElement.remove();
+}catch(e){console.log('Save error:',e)}
+},
+GHGetSHA=async()=>{
+const token=localStorage.getItem('ghToken');
+const user=localStorage.getItem('ghUser');
+try{
+const res=await fetch(`https://api.github.com/repos/${user}/Workout-tracker/contents/data.json`,{
+headers:{'Authorization':`token ${token}`}
+});
+if(res.ok){
+const data=await res.json();
+return data.sha;
+}
+}catch(e){}
+return null;
+},
+GHLoad=async()=>{
+const token=localStorage.getItem('ghToken');
+const user=localStorage.getItem('ghUser');
+if(!token||!user)return;
+try{
+const res=await fetch(`https://api.github.com/repos/${user}/Workout-tracker/contents/data.json`,{
+headers:{'Authorization':`token ${token}`}
+});
+if(res.ok){
+const data=await res.json();
+const content=JSON.parse(atob(data.content));
+if(content.p)p=content.p;
+if(content.w)w=content.w;
+S();R();
+}
+}catch(e){console.log('Load error:',e)}
+},
 
 // Events
-const SD=()=>{
-const input=document.createElement('input');
-input.type='date';
-input.value=dt;
-input.onchange=e=>{
-dt=e.target.value;
+const DTC=v=>{
+dt=v;
 d=FD();
 IW();
 R();
-};
-input.click();
 };
 
 // Swipe Detection für Tab-Navigation
@@ -1033,6 +1112,8 @@ $A('.ta')[current-1].click();
 
 // Init
 L();
+// Auto-load from GitHub on start
+if(localStorage.getItem('ghToken'))GHLoad();
 FD();
 IW();
 R();
