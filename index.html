@@ -256,7 +256,8 @@ if(t&&u){
 localStorage.setItem('ght',t);
 localStorage.setItem('ghu',u);
 localStorage.setItem('ghr',r);
-ghs();alert('✅ Aktiviert');
+ghl().then(()=>{r();ghs()});
+alert('✅ Aktiviert');
 document.querySelector('.m').remove();
 }
 }
@@ -272,7 +273,7 @@ method:'PUT',
 headers:{'Authorization':`token ${t}`},
 body:JSON.stringify({message:`Update ${new Date().toLocaleString('de')}`,content:d,sha:s})
 });
-}catch{}
+}catch(e){console.log('GitHub save error:',e)}
 }
 
 async function gsha(){
@@ -295,16 +296,26 @@ headers:{'Authorization':`token ${t}`}
 if(res.ok){
 const d=await res.json();
 const c=JSON.parse(decodeURIComponent(escape(atob(d.content))));
-if(c.w){w=c.w;s();r();alert('✅ Geladen')}
+if(c.w){
+w=c.w;
+localStorage.setItem('w',JSON.stringify(w));
+console.log('✅ Von GitHub geladen');
 }
-}catch{}
+}else if(res.status===404){
+// Datei existiert nicht - erstelle sie
+console.log('📝 Erstelle neue data.json');
+await ghs();
+}
+}catch(e){console.log('GitHub load error:',e)}
 }
 
 // Init
-l();fd();r();
-if(localStorage.getItem('ght')&&!sessionStorage.getItem('gl')){
-sessionStorage.setItem('gl','1');
-ghl();
+l();fd();
+// Immer von GitHub laden wenn konfiguriert
+if(localStorage.getItem('ght')){
+ghl().then(()=>r());
+}else{
+r();
 }
 </script>
 
