@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -36,16 +35,16 @@ button:active{transform:scale(0.96)}
 .fb{justify-content:space-between}
 .e{background:#2c2c2e;border-radius:14px;padding:14px;margin-bottom:10px;animation:sl .3s}
 @keyframes sl{from{opacity:0;transform:translateY(10px)}}
-.eh{display:flex;justify-content:space-between;margin-bottom:12px}
+.eh{display:flex;justify-content:space-between;margin-bottom:12px;align-items:center}
 .en{font:600 18px/1 system-ui}
-.eb{background:#007AFF;padding:5px 12px;border-radius:20px;font:600 13px/1 system-ui}
+.eb{background:#007AFF;padding:5px 12px;border-radius:20px;font:600 13px/1 system-ui;white-space:nowrap}
 .s{display:grid;grid-template-columns:32px 1fr 75px 48px;gap:8px;align-items:center;padding:10px;background:#1c1c1e;border-radius:10px;margin-bottom:8px;transition:all .2s}
 .s.d{background:linear-gradient(90deg,rgba(52,199,89,0.2),rgba(52,199,89,0.1));border:1px solid #30D158}
-.sn{width:32px;height:32px;background:#007AFF;border-radius:50%;display:grid;place-items:center;font:600 15px/1 system-ui}
+.sn{width:32px;height:32px;background:#007AFF;border-radius:50%;display:grid;place-items:center;font:600 15px/1 system-ui;flex-shrink:0}
 .s.d .sn{background:#30D158}
 .si{padding:10px;background:#000;border:1px solid #3a3a3c;border-radius:8px;text-align:center;font:600 17px/1 system-ui}
 .si:focus{border-color:#007AFF;outline:0}
-.ch{width:48px;height:38px;border-radius:10px;background:#1c1c1e;border:2px solid #3a3a3c;display:grid;place-items:center;cursor:pointer;font-size:20px;transition:all .2s}
+.ch{width:48px;height:38px;border-radius:10px;background:#1c1c1e;border:2px solid #3a3a3c;display:grid;place-items:center;cursor:pointer;font-size:20px;transition:all .2s;flex-shrink:0}
 .ch.on{background:#30D158;border-color:#30D158;color:#fff}
 .tb{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:12px;background:#1c1c1e;padding:4px;border-radius:14px}
 .ta{padding:12px;background:0;border:0;color:#8E8E93;font:600 15px/1 system-ui;cursor:pointer;border-radius:10px;transition:all .2s}
@@ -58,7 +57,7 @@ button:active{transform:scale(0.96)}
 .h{display:none!important}
 .m{position:fixed;inset:0;background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:999;display:none;align-items:flex-end;padding:0}
 .m.o{display:flex}
-.mc{background:#1c1c1e;border-radius:20px 20px 0 0;padding:24px;width:100%;max-height:80vh;overflow-y:auto;animation:su .3s}
+.mc{background:#1c1c1e;border-radius:20px 20px 0 0;padding:24px;width:100%;max-height:80vh;overflow-y:auto;animation:su .3s;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 @keyframes su{from{transform:translateY(100%)}}
 .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
 .mh h3{font:600 20px/1 system-ui}
@@ -100,6 +99,10 @@ textarea{resize:none;font:16px/1.4 system-ui}
 .tplb span{display:block;font-size:24px;margin-bottom:4px}
 .tplb small{color:#8E8E93;font-size:12px}
 .dt-display{padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;text-align:center;font:600 15px/1 system-ui}
+.sup{vertical-align:super;font-size:0.7em;margin-left:2px}
+.rpe{width:60px;padding:8px;background:#000;border:1px solid #3a3a3c;border-radius:8px;text-align:center;font:600 14px/1 system-ui}
+.rpe:focus{border-color:#007AFF}
+.rm{display:inline-block;background:#FF9500;color:#fff;padding:2px 8px;border-radius:12px;font:600 11px/1 system-ui;margin-left:8px}
 </style>
 </head>
 <body>
@@ -152,6 +155,11 @@ textarea{resize:none;font:16px/1.4 system-ui}
 <div class="st"><div class="sv" id="tw">0</div><div class="sl">Workouts</div></div>
 <div class="st"><div class="sv" id="sk">0</div><div class="sl">Streak 🔥</div></div>
 <div class="st"><div class="sv" id="tk">0</div><div class="sl">Total KG</div></div>
+</div>
+<div class="sg">
+<div class="st"><div class="sv" id="av">0</div><div class="sl">Ø kg/Set</div></div>
+<div class="st"><div class="sv" id="tr">0</div><div class="sl">Total Reps</div></div>
+<div class="st"><div class="sv" id="tt">0h</div><div class="sl">Zeit gesamt</div></div>
 </div>
 <div class="cd">
 <div class="sw">
@@ -290,9 +298,7 @@ try{
 const sp=localStorage.getItem('p');
 if(sp){
 const parsed=JSON.parse(sp);
-Object.keys(parsed).forEach(k=>{
-if(dp[k])p[k]=parsed[k];
-});
+Object.keys(parsed).forEach(k=>{if(dp[k])p[k]=parsed[k]});
 }
 const sw=localStorage.getItem('w');
 if(sw)w=JSON.parse(sw);
@@ -331,9 +337,12 @@ dt=date.toISOString().split('T')[0];
 d=FD();
 IW();
 R();
-};
-
-const R=()=>{
+},
+C1RM=(w,r)=>{
+if(!w||!r)return 0;
+return Math.round(w/(1.0278-0.0278*r));
+},
+R=()=>{
 const P=p[d],W=w[K()];
 $('wt').textContent=P.t;
 $('rt').classList.toggle('h',!P.rt);
@@ -358,6 +367,15 @@ h='<div class="cd empty">Keine Übungen vorhanden<br><small>Füge Übungen mit d
 }else{
 P.e.forEach((x,i)=>{
 const E=W&&W.e?W.e[i]:null;
+let maxRM=0;
+if(E&&E.s){
+E.s.forEach(s=>{
+if(s.w&&s.r&&s.d){
+const rm=C1RM(parseFloat(s.w),parseInt(s.r));
+if(rm>maxRM)maxRM=rm;
+}
+});
+}
 h+=`<div class="e ${em?'em':''}">`;
 if(em){
 h+=`<input value="${x.n}" onchange="UE(${i},'n',this.value)" style="margin-bottom:12px">
@@ -365,7 +383,7 @@ h+=`<input value="${x.n}" onchange="UE(${i},'n',this.value)" style="margin-botto
 <input value="${x.r}" onchange="UE(${i},'r',this.value)">
 <button class="b br" onclick="RE(${i})">🗑️</button></div>`;
 }else{
-h+=`<div class="eh"><div class="en">${x.n}</div><div class="eb">${x.mg||''}${x.mg?' • ':''}${x.s}×${x.r}</div></div>`;
+h+=`<div class="eh"><div class="en">${x.n}${maxRM?`<span class="rm">1RM: ${maxRM}kg</span>`:''}</div><div class="eb">${x.mg||''}${x.mg?' • ':''}${x.s}×${x.r}</div></div>`;
 if(E&&E.s){
 E.s.forEach((s,j)=>{
 h+=`<div class="s ${s.d?'d':''}"><div class="sn">${j+1}</div>
@@ -381,7 +399,6 @@ h+=`</div>`;
 if(em)h+=`<button onclick="$('am').classList.add('o')" style="width:100%;margin-top:12px;padding:16px">➕ Neue Übung</button>`;
 $('ex').innerHTML=h;
 },
-
 UP=x=>{
 $('pr').style.strokeDashoffset=138-x/100*138;
 $('pt').textContent=Math.round(x)+'%';
@@ -394,7 +411,6 @@ V([50,100,50]);
 setTimeout(()=>e.remove(),1000);
 }
 },
-
 US=(i,j,f,v)=>{
 const k=K();
 if(w[k]&&w[k].e&&w[k].e[i]&&w[k].e[i].s[j]){
@@ -455,19 +471,33 @@ const lastKey=keys[0];
 const lastWorkout=w[lastKey];
 const currentKey=K();
 if(w[currentKey]&&w[currentKey].e&&lastWorkout&&lastWorkout.e){
+let copied=false;
 w[currentKey].e.forEach((ex,i)=>{
 if(lastWorkout.e[i]&&lastWorkout.e[i].s){
 ex.s.forEach((set,j)=>{
 if(lastWorkout.e[i].s[j]){
-set.w=lastWorkout.e[i].s[j].w;
-set.r=lastWorkout.e[i].s[j].r;
+const lastSet=lastWorkout.e[i].s[j];
+if(lastSet.w||lastSet.r){
+set.w=lastSet.w;
+set.r=lastSet.r;
+copied=true;
+}
 }
 });
 }
 });
+if(copied){
 S();
 R();
 V([20,40]);
+const e=document.createElement('div');
+e.className='conf';
+e.textContent='📋';
+document.body.appendChild(e);
+setTimeout(()=>e.remove(),1000);
+}else{
+alert('Keine Daten zum Kopieren gefunden');
+}
 }
 }else{
 alert('Kein vorheriges Training gefunden');
@@ -489,6 +519,7 @@ $('ti').classList.remove('o');
 const k=K();
 if(w[k]){
 w[k].et=Date.now();
+w[k].d=ts;
 S();
 }
 V([10,30,10]);
@@ -549,7 +580,7 @@ SS=()=>{
 // Stats
 const tw=Object.keys(w).length;
 $('tw').textContent=tw;
-let kg=0;
+let kg=0,reps=0,sets=0,time=0;
 Object.values(w).forEach(x=>{
 if(x.e){
 x.e.forEach(e=>{
@@ -557,13 +588,19 @@ if(e.s){
 e.s.forEach(s=>{
 if(s.d&&s.w&&s.r){
 kg+=parseFloat(s.w)*parseInt(s.r);
+reps+=parseInt(s.r);
+sets++;
 }
 });
 }
 });
 }
+if(x.d)time+=x.d;
 });
 $('tk').textContent=Math.round(kg);
+$('tr').textContent=reps;
+$('av').textContent=sets?Math.round(kg/sets):'0';
+$('tt').textContent=time?`${Math.round(time/3600)}h`:'0h';
 
 let sk=0;
 const today=new Date();
@@ -888,12 +925,17 @@ const[dateStr,dayName]=key.split('-');
 const workout=w[key];
 if(!workout||!workout.e)return;
 if(cf&&!workout.e.some(e=>e.mg===cf))return;
-let completed=0,total=0;
+let completed=0,total=0,volume=0;
 workout.e.forEach(exercise=>{
 if(exercise.s){
 exercise.s.forEach(set=>{
 total++;
-if(set.d)completed++;
+if(set.d){
+completed++;
+if(set.w&&set.r){
+volume+=parseFloat(set.w)*parseInt(set.r);
+}
+}
 });
 }
 });
@@ -903,7 +945,7 @@ const date=new Date(dateStr+'T12:00');
 html+=`<div class="cd hs" onclick="JD('${dateStr}','${dayName}')">
 <div class="hst">${dayName} • ${date.getDate()}.${date.getMonth()+1}.${date.getFullYear()}</div>
 <div style="font:700 24px/1 system-ui;color:${percent>80?'#30D158':percent>50?'#007AFF':'#FF9500'}">${percent}%</div>
-<div style="font:600 13px/1 system-ui;color:#8E8E93;margin-top:4px">${completed}/${total} Sets${workout.n?' • 📝':''}${duration?` • ${Math.round(duration/60000)}min`:''}</div>
+<div style="font:600 13px/1 system-ui;color:#8E8E93;margin-top:4px">${completed}/${total} Sets${volume?` • ${Math.round(volume)}kg`:''}${workout.n?' • 📝':''}${duration?` • ${Math.round(duration/60000)}min`:''}</div>
 </div>`;
 });
 }
@@ -967,6 +1009,25 @@ R();
 input.click();
 });
 
+// Swipe Detection für Tab-Navigation
+let touchStartX=0,touchEndX=0;
+document.addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].screenX},false);
+document.addEventListener('touchend',e=>{
+touchEndX=e.changedTouches[0].screenX;
+const diff=touchStartX-touchEndX;
+if(Math.abs(diff)>100){
+const tabs=['w','s','g','h'];
+const current=tabs.findIndex(t=>!$(t).classList.contains('h'));
+if(diff>0&&current<tabs.length-1){
+T(tabs[current+1]);
+$A('.ta')[current+1].click();
+}else if(diff<0&&current>0){
+T(tabs[current-1]);
+$A('.ta')[current-1].click();
+}
+}
+},false);
+
 // Init
 L();
 FD();
@@ -992,7 +1053,11 @@ lastTouch=now;
 document.addEventListener('visibilitychange',()=>{
 if(document.hidden)S();
 });
-</script>
 
+// Workout reminder notification (wenn möglich)
+if('Notification' in window && Notification.permission === 'default'){
+Notification.requestPermission();
+}
+</script>
 </body>
 </html>
