@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#000">
@@ -1114,7 +1115,9 @@ const repo=localStorage.getItem('ghRepo')||'Workout-tracker';
 if(!token||!user)return;
 
 try{
-const data=btoa(JSON.stringify({p,w,v:3,updated:new Date().toISOString()}));
+// Fix für UTF-8 Encoding (Umlaute etc.)
+const jsonStr=JSON.stringify({p,w,v:3,updated:new Date().toISOString()});
+const data=btoa(unescape(encodeURIComponent(jsonStr)));
 const sha=await GHSHA();
 const url=`https://api.github.com/repos/${user}/${repo}/contents/data.json`;
 const res=await fetch(url,{
@@ -1132,6 +1135,8 @@ sha:sha
 if(res.ok){
 console.log('✅ Saved to GitHub');
 showToast('☁️ Gespeichert');
+}else{
+console.error('GitHub save failed:',res.status,await res.text());
 }
 }catch(e){console.log('GitHub save error:',e)}
 }
@@ -1166,13 +1171,17 @@ headers:{'Authorization':`token ${token}`}
 });
 if(res.ok){
 const data=await res.json();
-const content=JSON.parse(atob(data.content));
+// Fix für UTF-8 Decoding
+const jsonStr=decodeURIComponent(escape(atob(data.content)));
+const content=JSON.parse(jsonStr);
 if(content.p)p=content.p;
 if(content.w)w=content.w;
 S();
 R();
 alert('✅ Von GitHub geladen!');
 location.reload();
+}else{
+console.error('GitHub load failed:',res.status);
 }
 }catch(e){
 console.log('GitHub load error:',e);
