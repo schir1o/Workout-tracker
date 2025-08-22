@@ -302,19 +302,22 @@ localStorage.setItem('w',JSON.stringify(w));
 console.log('✅ Von GitHub geladen');
 }
 }else if(res.status===404){
-// Datei existiert nicht - erstelle sie
-console.log('📝 Erstelle neue data.json');
+// Datei existiert nicht - starte mit leerem Workout
+console.log('📝 Erstelle neue data.json mit leeren Daten');
+w={};  // Leere Daten statt lokale!
 await ghs();
 }
 }catch(e){console.log('GitHub load error:',e)}
 }
 
 // Init
-l();fd();
-// Immer von GitHub laden wenn konfiguriert
+fd();
+// Wenn GitHub konfiguriert, NUR von dort laden
 if(localStorage.getItem('ght')){
 ghl().then(()=>r());
 }else{
+// Nur wenn kein GitHub, dann lokal laden
+l();
 r();
 }
 </script>
