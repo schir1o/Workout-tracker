@@ -1,9 +1,4 @@
-S=()=>{
-try{
-localStorage.setItem('p',JSON.stringify(p));
-localStorage.setItem('w',JSON.stringify(w));
-// Auto-save to GitHub if configured (mit Debouncing)
-if(localStorage.<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -92,6 +87,7 @@ textarea{resize:none;font:16px/1.4 system-ui}
 .wd.dn{background:#30D158;color:#fff;border-color:#30D158}
 .wd.ps{background:#FF9500;color:#fff;border-color:#FF9500}
 .sw{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:12px}
+@keyframes fadeInOut{0%{opacity:0;transform:translateY(-20px)}20%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0}}
 .conf{position:fixed;top:50%;left:50%;font-size:100px;transform:translate(-50%,-50%);animation:cf 1s;pointer-events:none;z-index:9999}
 @keyframes cf{0%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(0)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.5) rotate(180deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(0.5) rotate(360deg)}}
 .bdg{position:absolute;top:8px;right:8px;background:#FF3B30;color:#fff;font:600 10px/1 system-ui;padding:4px 8px;border-radius:10px}
@@ -321,8 +317,11 @@ S=()=>{
 try{
 localStorage.setItem('p',JSON.stringify(p));
 localStorage.setItem('w',JSON.stringify(w));
-// Auto-save to GitHub if configured
-if(localStorage.getItem('ghToken'))GHSave();
+// Auto-save to GitHub if configured (mit Debouncing)
+if(localStorage.getItem('ghToken')){
+clearTimeout(window.ghSaveTimeout);
+window.ghSaveTimeout=setTimeout(()=>GHSave(),2000);
+}
 }catch(e){console.log('Save error:',e)}
 },
 K=()=>`${dt}-${d}`,
@@ -1035,21 +1034,35 @@ modal.innerHTML=`
 document.body.appendChild(modal);
 },
 GHSave=async()=>{
-const token=$('gh-token')?.value||localStorage.getItem('ghToken');
-const user=$('gh-user')?.value||localStorage.getItem('ghUser');
+const token=localStorage.getItem('ghToken');
+const user=localStorage.getItem('ghUser');
 if(!token||!user)return;
-localStorage.setItem('ghToken',token);
-localStorage.setItem('ghUser',user);
-const data=btoa(JSON.stringify({p,w,v:3,d:new Date()}));
+const data=btoa(JSON.stringify({p,w,v:3,d:new Date().toISOString(),device:navigator.userAgent.substring(0,50)}));
 try{
-await fetch(`https://api.github.com/repos/${user}/Workout-tracker/contents/data.json`,{
+const sha=await GHGetSHA();
+const res=await fetch(`https://api.github.com/repos/${user}/Workout-tracker/contents/data.json`,{
 method:'PUT',
 headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},
-body:JSON.stringify({message:'Update gym data',content:data,sha:await GHGetSHA()})
+body:JSON.stringify({
+message:`Update: ${new Date().toLocaleString('de-DE')}`,
+content:data,
+sha:sha
+})
 });
-if($('gh-token'))alert('Gespeichert in GitHub!');
-if($('gh-token'))document.querySelector('[onclick*="GHSave"]').parentElement.remove();
-}catch(e){console.log('Save error:',e)}
+if(res.ok){
+console.log('✅ Auto-saved to GitHub');
+// Visuelles Feedback
+const saved=document.createElement('div');
+saved.style.cssText='position:fixed;top:80px;right:20px;background:#30D158;color:#fff;padding:8px 16px;border-radius:20px;font:600 14px/1 system-ui;z-index:9999;animation:fadeInOut 2s';
+saved.textContent='☁️ Gespeichert';
+document.body.appendChild(saved);
+setTimeout(()=>saved.remove(),2000);
+}else{
+console.error('GitHub save failed:',res.status);
+}
+}catch(e){
+console.log('Save error:',e);
+}
 },
 GHGetSHA=async()=>{
 const token=localStorage.getItem('ghToken');
