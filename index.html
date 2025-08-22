@@ -285,7 +285,7 @@ legs:{e:[{n:'Kniebeugen',s:4,r:'8-12',mg:'Beine'},{n:'Beinpresse',s:4,r:'10-12',
 full:{e:[{n:'Kniebeugen',s:3,r:'10',mg:'Beine'},{n:'Bankdrücken',s:3,r:'10',mg:'Brust'},{n:'Klimmzüge',s:3,r:'8',mg:'Rücken'},{n:'Schulterpresse',s:3,r:'10',mg:'Schultern'},{n:'Plank',s:3,r:'60s',mg:'Bauch'}]}
 };
 
-let d=WD[new Date().getDay()],dt=new Date().toISOString().split('T')[0],em=0,ti,ts=0,v=navigator.vibrate?1:0,wo=0,cf='',gist=null;
+let d=WD[new Date().getDay()],dt=new Date().toISOString().split('T')[0],em=0,ti,ts=0,v=navigator.vibrate?1:0,wo=0,cf='';
 const dp={
 Montag:{t:'🔥 Brust & Trizeps',e:[{n:'Brustpresse',s:4,r:'8-12',mg:'Brust'},{n:'Butterfly',s:4,r:'10-12',mg:'Brust'},{n:'Dips',s:4,r:'10-12',mg:'Brust'},{n:'Trizeps',s:3,r:'12-15',mg:'Arme'}]},
 Dienstag:{t:'💪 Rücken & Bizeps',e:[{n:'Latzug',s:4,r:'8-12',mg:'Rücken'},{n:'Rudern',s:4,r:'8-12',mg:'Rücken'},{n:'Klimmzüge',s:3,r:'6-10',mg:'Rücken'},{n:'Bizeps',s:4,r:'10-12',mg:'Arme'}]},
@@ -306,10 +306,9 @@ Object.keys(parsed).forEach(k=>{if(dp[k])p[k]=parsed[k]});
 }
 const sw=localStorage.getItem('w');
 if(sw)w=JSON.parse(sw);
-gist=localStorage.getItem('gist');
-// Auto-load from cloud if configured
-if(gist&&navigator.onLine){
-CLoad();
+// Auto-load from GitHub if configured
+if(localStorage.getItem('ghToken')&&navigator.onLine){
+GHLoad();
 }
 }catch(e){console.log('Load error:',e)}
 },
