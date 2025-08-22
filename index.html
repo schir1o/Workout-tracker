@@ -388,6 +388,13 @@ UP(100);
 return;
 }
 
+// Stelle sicher, dass Workout-Daten existieren
+if(!W&&P.e&&P.e.length>0){
+IW();
+const newW=w[K()];
+if(newW)return R(); // Rekursiv aufrufen mit neuen Daten
+}
+
 let c=0,t=0;
 if(W&&W.e){
 W.e.forEach(x=>x.s.forEach(s=>{t++;s.d&&c++}));
@@ -417,14 +424,14 @@ h+=`<input value="${x.n}" onchange="UE(${i},'n',this.value)" style="margin-botto
 <button class="b br" onclick="RE(${i})">🗑️</button></div>`;
 }else{
 h+=`<div class="eh"><div class="en">${x.n}${maxRM?`<span class="rm">1RM: ${maxRM}kg</span>`:''}</div><div class="eb">${x.mg||''}${x.mg?' • ':''}${x.s}×${x.r}</div></div>`;
-if(E&&E.s){
-E.s.forEach((s,j)=>{
+// Zeige Sets auch wenn E null ist
+const sets=E&&E.s?E.s:Array(x.s).fill().map(()=>({w:'',r:'',d:0}));
+sets.forEach((s,j)=>{
 h+=`<div class="s ${s.d?'d':''}"><div class="sn">${j+1}</div>
 <input class="si" placeholder="kg" value="${s.w}" onchange="US(${i},${j},'w',this.value)" inputmode="decimal">
 <input class="si" placeholder="Wdh" value="${s.r}" onchange="US(${i},${j},'r',this.value)" style="width:75px" inputmode="numeric">
 <button class="ch ${s.d?'on':''}" onclick="TG(${i},${j})">${s.d?'✓':''}</button></div>`;
 });
-}
 }
 h+=`</div>`;
 });
@@ -597,12 +604,21 @@ const mg=$('nmg').value;
 if(n){
 if(!p[d].e)p[d].e=[];
 p[d].e.push({n,s,r,mg});
+// Workout-Daten für neue Übung initialisieren
+const k=K();
+if(!w[k])w[k]={e:[],n:'',st:Date.now()};
+if(!w[k].e)w[k].e=[];
+// Füge die neue Übung mit leeren Sets hinzu
+w[k].e.push({
+n:n,
+s:Array(s).fill().map(()=>({w:'',r:'',d:0})),
+mg:mg
+});
 $('nn').value='';
 $('ns').value='3';
 $('nr').value='8-12';
 CM('am');
 S();
-IW();
 R();
 }
 }
@@ -1140,10 +1156,15 @@ sha:sha
 if(res.ok){
 console.log('✅ Saved to GitHub');
 showToast('☁️ Gespeichert');
+return true;
 }else{
 console.error('GitHub save failed:',res.status,await res.text());
+return false;
 }
-}catch(e){console.log('GitHub save error:',e)}
+}catch(e){
+console.log('GitHub save error:',e);
+return false;
+}
 }
 
 async function GHSHA(){
