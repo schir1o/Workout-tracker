@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Darios Gym</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font:16px/1.5 -apple-system,system-ui,sans-serif;background:#000;color:#fff;padding:10px}
+.h{display:none!important}
+.cd{background:#1c1c1e;border-radius:12px;padding:16px;margin-bottom:12px}
+.hd{background:linear-gradient(135deg,#007AFF,#0051D5);position:sticky;top:0;z-index:10}
+.f{display:flex;gap:10px;align-items:center}
+.fb{justify-content:space-between}
+.dt{padding:10px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;font:600 15px/1 system-ui;cursor:pointer}
+input,button,select{width:100%;padding:12px;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:8px;color:#fff;font:16px/1 system-ui}
+button{background:#007AFF;border:0;font-weight:600;cursor:pointer}
+.b{padding:8px 12px;width:auto}
+.br{background:#FF3B30}
+.bg{background:#34C759}
+.bgy{background:#5A5A5E}
+.e{background:#2c2c2e;border-radius:10px;padding:12px;margin-bottom:10px}
+.eh{display:flex;justify-content:space-between;margin-bottom:10px}
+.s{display:grid;grid-template-columns:32px 1fr 75px 48px;gap:8px;align-items:center;padding:8px;background:#1c1c1e;border-radius:8px;margin-bottom:6px}
+.s.d{background:rgba(52,199,89,0.2)}
+.sn{width:32px;height:32px;background:#007AFF;border-radius:50%;display:grid;place-items:center;font:600 14px/1 system-ui}
+.si{padding:8px;background:#000;border:1px solid #3a3a3c;border-radius:6px;text-align:center}
+.ch{width:48px;height:36px;border-radius:8px;background:#1c1c1e;border:2px solid #3a3a3c;display:grid;place-items:center;cursor:pointer}
+.ch.on{background:#30D158;border-color:#30D158}
+.m{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:999;display:none;align-items:flex-end}
+.m.o{display:flex}
+.mc{background:#1c1c1e;border-radius:16px 16px 0 0;padding:20px;width:100%;max-height:80vh;overflow-y:auto}
+.fg{margin-bottom:16px}
+.l{display:block;margin-bottom:6px;font:600 12px/1 system-ui;color:#8E8E93}
+.em{text-align:center;padding:40px;color:#8E8E93}
+</style>
+</head>
+<body>
+<div class="cd hd">
+<h1 style="font:700 24px/1 system-ui">💪 Darios Gym</h1>
+<div class="f" style="margin-top:12px">
+<button class="dt" onclick="cd(-1)">←</button>
+<input type="date" id="di" onchange="sd(this.value)" style="position:absolute;opacity:0;pointer-events:none">
+<label for="di" class="dt" id="dd" style="flex:1;text-align:center" onclick="$('di').style.pointerEvents='auto';$('di').click();$('di').style.pointerEvents='none'"></label>
+<button class="dt" onclick="cd(1)">→</button>
+</div>
+</div>
+
+<div id="ex"></div>
+
+<div class="f" style="gap:10px;margin-top:16px">
+<button onclick="xp()" class="bgy">📤 Export</button>
+<button onclick="im()" class="bgy">📥 Import</button>
+<button onclick="cs()" class="bg">☁️ GitHub</button>
+</div>
+
+<div class="m" id="am" onclick="if(event.target.id=='am')cm('am')">
+<div class="mc">
+<h3 style="margin-bottom:16px">Neue Übung</h3>
+<div class="fg">
+<label class="l">Name</label>
+<input id="nn" placeholder="z.B. Bankdrücken">
+</div>
+<div class="fg">
+<label class="l">Sätze</label>
+<input type="number" id="ns" value="3" min="1" max="10">
+</div>
+<div class="fg">
+<label class="l">Wiederholungen</label>
+<input id="nr" value="8-12" placeholder="8-12">
+</div>
+<div class="fg">
+<label class="l">Typ</label>
+<select id="nt">
+<option value="kg">Gewicht (kg)</option>
+<option value="m">Distanz (m)</option>
+<option value="min">Zeit (min)</option>
+</select>
+</div>
+<div class="fg">
+<label class="l">Muskelgruppe</label>
+<select id="nm">
+<option value="Brust">Brust</option>
+<option value="Rücken">Rücken</option>
+<option value="Beine">Beine</option>
+<option value="Schultern">Schultern</option>
+<option value="Arme">Arme</option>
+<option value="Bauch">Bauch</option>
+<option value="Cardio">Cardio</option>
+<option value="Andere">Andere</option>
+</select>
+</div>
+<button onclick="ae()">Hinzufügen</button>
+<button onclick="cm('am')" class="bgy" style="margin-top:10px">Abbrechen</button>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let dt=new Date().toISOString().split('T')[0];
+let w={};
+
+// Load/Save
+function l(){try{w=JSON.parse(localStorage.getItem('w'))||{}}catch{}}
+function s(){localStorage.setItem('w',JSON.stringify(w));if(localStorage.getItem('ght'))ghs()}
+
+// Date
+function fd(){
+const d=new Date(dt+'T12:00');
+const mo=['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()];
+$('dd').textContent=`${mo}, ${d.getDate()}.${(d.getMonth()+1+'').padStart(2,'0')}.${d.getFullYear()}`;
+$('di').value=dt;
+}
+
+function cd(n){
+const d=new Date(dt+'T12:00');
+d.setDate(d.getDate()+n);
+dt=d.toISOString().split('T')[0];
+fd();r();
+}
+
+function sd(v){dt=v;fd();r()}
+
+// Render
+function r(){
+const k=dt;
+const d=w[k];
+let h='';
+if(!d||!d.e||d.e.length===0){
+h='<div class="cd em">Noch keine Einträge<br><small>Übung hinzufügen mit Button unten</small></div>';
+}else{
+d.e.forEach((x,i)=>{
+const tp=x.t||'kg';
+const unit=tp==='m'?'m':tp==='min'?'min':'kg';
+const ph=tp==='m'?'Meter':tp==='min'?'Minuten':'kg';
+h+=`<div class="e">
+<div class="eh">
+<strong>${x.n}</strong>
+<span style="background:#007AFF;padding:2px 8px;border-radius:6px;font-size:12px">${x.m||'Andere'}</span>
+<button class="b br" onclick="if(confirm('Übung wirklich löschen?'))re(${i})">×</button>
+</div>`;
+x.s.forEach((s,j)=>{
+h+=`<div class="s ${s.d?'d':''}">
+<div class="sn">${j+1}</div>
+<input class="si" placeholder="${ph}" value="${s.w||''}" onchange="us(${i},${j},'w',this.value)">
+<input class="si" placeholder="${tp==='kg'?'Wdh':'Zeit'}" value="${s.r||''}" onchange="us(${i},${j},'r',this.value)" style="width:75px">
+<button class="ch ${s.d?'on':''}" onclick="tg(${i},${j})">${s.d?'✓':''}</button>
+</div>`;
+});
+h+=`</div>`;
+});
+}
+h+=`<button onclick="$('am').classList.add('o')" style="margin-top:12px">➕ Neue Übung</button>`;
+$('ex').innerHTML=h;
+}
+
+// Update Set
+function us(i,j,f,v){
+const k=dt;
+if(!w[k])w[k]={e:[]};
+if(w[k].e[i]&&w[k].e[i].s[j]){
+w[k].e[i].s[j][f]=v;
+s();
+}
+}
+
+// Toggle Done
+function tg(i,j){
+const k=dt;
+if(w[k]&&w[k].e[i]&&w[k].e[i].s[j]){
+w[k].e[i].s[j].d=!w[k].e[i].s[j].d;
+s();r();
+}
+}
+
+// Add Exercise
+function ae(){
+const n=$('nn').value.trim();
+const st=parseInt($('ns').value)||3;
+const rp=$('nr').value||'8-12';
+const tp=$('nt').value||'kg';
+const mg=$('nm').value||'Andere';
+if(n){
+const k=dt;
+if(!w[k])w[k]={e:[]};
+w[k].e.push({n,r:rp,t:tp,m:mg,s:Array(st).fill().map(()=>({w:'',r:'',d:0}))});
+$('nn').value='';$('ns').value='3';$('nr').value='8-12';$('nt').value='kg';$('nm').value='Brust';
+cm('am');s();r();
+}
+}
+
+// Remove Exercise
+function re(i){
+const k=dt;
+if(w[k]&&w[k].e){
+w[k].e.splice(i,1);
+if(w[k].e.length===0)delete w[k];
+s();r();
+}
+}
+
+// Close Modal
+function cm(i){$(i).classList.remove('o')}
+
+// Export
+function xp(){
+const d=JSON.stringify(w,null,2);
+const b=new Blob([d],{type:'application/json'});
+const u=URL.createObjectURL(b);
+const a=document.createElement('a');
+a.href=u;
+a.download=`gym-${dt}.json`;
+a.click();
+}
+
+// Import
+function im(){
+const i=document.createElement('input');
+i.type='file';
+i.accept='.json';
+i.onchange=e=>{
+const r=new FileReader();
+r.onload=ev=>{
+try{
+w=JSON.parse(ev.target.result);
+s();r();alert('✅ Import erfolgreich!');
+}catch{alert('❌ Fehler beim Import')}
+};
+r.readAsText(e.target.files[0]);
+};
+i.click();
+}
+
+// GitHub Sync
+function cs(){
+const m=document.createElement('div');
+m.className='m o';
+m.onclick=e=>{if(e.target===m)m.remove()};
+m.innerHTML=`<div class="mc">
+<h3 style="margin-bottom:16px">GitHub Sync</h3>
+<div class="fg"><label class="l">Token</label><input id="gt" type="password" value="${localStorage.getItem('ght')||''}"></div>
+<div class="fg"><label class="l">User</label><input id="gu" value="${localStorage.getItem('ghu')||''}"></div>
+<div class="fg"><label class="l">Repo</label><input id="gr" value="${localStorage.getItem('ghr')||'Workout-tracker'}"></div>
+<button onclick="gss()">Speichern</button>
+${localStorage.getItem('ght')?'<button onclick="ghl()" class="bg" style="margin-top:10px">Von GitHub laden</button>':''}
+<button onclick="this.parentElement.parentElement.remove()" class="bgy" style="margin-top:10px">Abbrechen</button>
+</div>`;
+document.body.appendChild(m);
+}
+
+function gss(){
+const t=$('gt').value,u=$('gu').value,r=$('gr').value;
+if(t&&u){
+localStorage.setItem('ght',t);
+localStorage.setItem('ghu',u);
+localStorage.setItem('ghr',r);
+ghs();alert('✅ Aktiviert');
+document.querySelector('.m').remove();
+}
+}
+
+async function ghs(){
+const t=localStorage.getItem('ght'),u=localStorage.getItem('ghu'),r=localStorage.getItem('ghr')||'Workout-tracker';
+if(!t||!u)return;
+try{
+const d=btoa(unescape(encodeURIComponent(JSON.stringify({w,d:new Date()}))));
+const s=await gsha();
+await fetch(`https://api.github.com/repos/${u}/${r}/contents/data.json`,{
+method:'PUT',
+headers:{'Authorization':`token ${t}`},
+body:JSON.stringify({message:`Update ${new Date().toLocaleString('de')}`,content:d,sha:s})
+});
+}catch{}
+}
+
+async function gsha(){
+const t=localStorage.getItem('ght'),u=localStorage.getItem('ghu'),r=localStorage.getItem('ghr')||'Workout-tracker';
+try{
+const res=await fetch(`https://api.github.com/repos/${u}/${r}/contents/data.json`,{
+headers:{'Authorization':`token ${t}`}
+});
+if(res.ok)return(await res.json()).sha;
+}catch{}
+}
+
+async function ghl(){
+const t=localStorage.getItem('ght'),u=localStorage.getItem('ghu'),r=localStorage.getItem('ghr')||'Workout-tracker';
+if(!t||!u)return;
+try{
+const res=await fetch(`https://api.github.com/repos/${u}/${r}/contents/data.json`,{
+headers:{'Authorization':`token ${t}`}
+});
+if(res.ok){
+const d=await res.json();
+const c=JSON.parse(decodeURIComponent(escape(atob(d.content))));
+if(c.w){w=c.w;s();r();alert('✅ Geladen')}
+}
+}catch{}
+}
+
+// Init
+l();fd();r();
+if(localStorage.getItem('ght')&&!sessionStorage.getItem('gl')){
+sessionStorage.setItem('gl','1');
+ghl();
+}
+</script>
+
+</body>
+</html>
