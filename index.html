@@ -1050,8 +1050,150 @@ reader.readAsText(e.target.files[0]);
 input.click();
 }
 
+// GitHub Sync Funktionen
+function CS(){
+const modal=document.createElement('div');
+modal.className='m o';
+modal.onclick=function(e){if(e.target===this)this.classList.remove('o')};
+modal.innerHTML=`
+<div class="mc">
+<div class="mh">
+<h3>☁️ GitHub Sync</h3>
+<button class="x" onclick="this.closest('.m').classList.remove('o')">×</button>
+</div>
+<p style="color:#8E8E93;margin-bottom:16px">Automatische Synchronisation mit deinem GitHub Repository</p>
+<div class="fg">
+<label class="l">GitHub Token</label>
+<input id="gh-token" type="password" placeholder="ghp_..." value="${localStorage.getItem('ghToken')||''}" autocomplete="off">
+</div>
+<div class="fg">
+<label class="l">Username</label>
+<input id="gh-user" placeholder="z.B. schir1o" value="${localStorage.getItem('ghUser')||''}" autocomplete="off">
+</div>
+<div class="fg">
+<label class="l">Repository</label>
+<input id="gh-repo" placeholder="z.B. Workout-tracker" value="${localStorage.getItem('ghRepo')||'Workout-tracker'}" autocomplete="off">
+</div>
+<button onclick="CSave()" style="width:100%;padding:16px;font-size:17px;margin-bottom:10px">💾 Speichern & Aktivieren</button>
+${localStorage.getItem('ghToken')?'<button onclick="GHL()" style="width:100%;padding:16px;font-size:17px;margin-bottom:10px" class="bg">📥 Von GitHub laden</button>':''}
+${localStorage.getItem('ghToken')?'<button onclick="CSD()" style="width:100%;padding:16px;font-size:17px" class="br">🗑️ Deaktivieren</button>':''}
+</div>`;
+document.body.appendChild(modal);
+}
+
+function CSave(){
+const token=document.getElementById('gh-token').value;
+const user=document.getElementById('gh-user').value;  
+const repo=document.getElementById('gh-repo').value;
+if(token&&user&&repo){
+localStorage.setItem('ghToken',token);
+localStorage.setItem('ghUser',user);
+localStorage.setItem('ghRepo',repo);
+GHS();
+alert('✅ GitHub Sync aktiviert!');
+document.querySelector('.m.o').classList.remove('o');
+setTimeout(()=>document.querySelector('.m').remove(),300);
+}else{
+alert('Bitte alle Felder ausfüllen!');
+}
+}
+
+function CSD(){
+localStorage.removeItem('ghToken');
+localStorage.removeItem('ghUser');
+localStorage.removeItem('ghRepo');
+alert('GitHub Sync deaktiviert');
+document.querySelector('.m.o').classList.remove('o');
+setTimeout(()=>document.querySelector('.m').remove(),300);
+}
+
+async function GHS(){
+const token=localStorage.getItem('ghToken');
+const user=localStorage.getItem('ghUser');
+const repo=localStorage.getItem('ghRepo')||'Workout-tracker';
+if(!token||!user)return;
+
+try{
+const data=btoa(JSON.stringify({p,w,v:3,updated:new Date().toISOString()}));
+const sha=await GHSHA();
+const url=`https://api.github.com/repos/${user}/${repo}/contents/data.json`;
+const res=await fetch(url,{
+method:'PUT',
+headers:{
+'Authorization':`token ${token}`,
+'Content-Type':'application/json'
+},
+body:JSON.stringify({
+message:`Update: ${new Date().toLocaleString('de-DE')}`,
+content:data,
+sha:sha
+})
+});
+if(res.ok){
+console.log('✅ Saved to GitHub');
+showToast('☁️ Gespeichert');
+}
+}catch(e){console.log('GitHub save error:',e)}
+}
+
+async function GHSHA(){
+const token=localStorage.getItem('ghToken');
+const user=localStorage.getItem('ghUser');
+const repo=localStorage.getItem('ghRepo')||'Workout-tracker';
+try{
+const url=`https://api.github.com/repos/${user}/${repo}/contents/data.json`;
+const res=await fetch(url,{
+headers:{'Authorization':`token ${token}`}
+});
+if(res.ok){
+const data=await res.json();
+return data.sha;
+}
+}catch(e){}
+return null;
+}
+
+async function GHL(){
+const token=localStorage.getItem('ghToken');
+const user=localStorage.getItem('ghUser');
+const repo=localStorage.getItem('ghRepo')||'Workout-tracker';
+if(!token||!user)return;
+
+try{
+const url=`https://api.github.com/repos/${user}/${repo}/contents/data.json`;
+const res=await fetch(url,{
+headers:{'Authorization':`token ${token}`}
+});
+if(res.ok){
+const data=await res.json();
+const content=JSON.parse(atob(data.content));
+if(content.p)p=content.p;
+if(content.w)w=content.w;
+S();
+R();
+alert('✅ Von GitHub geladen!');
+location.reload();
+}
+}catch(e){
+console.log('GitHub load error:',e);
+alert('❌ Fehler beim Laden');
+}
+}
+
+function showToast(text){
+const toast=document.createElement('div');
+toast.style.cssText='position:fixed;top:80px;right:20px;background:#30D158;color:#fff;padding:8px 16px;border-radius:20px;font:600 14px/1 system-ui;z-index:9999;animation:fadeInOut 2s';
+toast.textContent=text;
+document.body.appendChild(toast);
+setTimeout(()=>toast.remove(),2000);
+}
+
 // Init
 L();
+// Auto-load from GitHub on start
+if(localStorage.getItem('ghToken')){
+GHL();
+}
 FD();
 IW();
 R();
