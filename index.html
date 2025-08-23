@@ -142,7 +142,10 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 <div class="header">
 <div class="header-top">
 <h1>💪 Darios Gym</h1>
+<div style="display:flex;gap:8px">
+<button class="settings-btn" onclick="openStats()" style="background:rgba(255,255,255,0.2)">📊</button>
 <button class="settings-btn" onclick="openSettings()">⚙️</button>
+</div>
 </div>
 <div class="nav">
 <button class="nav-btn" onclick="cd(-1)">←</button>
@@ -353,7 +356,14 @@ function r(){
 const k=dt;
 const d=w[k];
 let h='';
-if(!d||!d.e||d.e.length===0){
+if(d&&d.rest){
+h=`<div class="empty">
+<div class="empty-icon">😴</div>
+<div class="empty-text">Ruhetag</div>
+<small>Gut erholt für das nächste Training!</small>
+</div>`;
+h+=`<button class="add-btn" onclick="removeRestDay()">💪 Doch trainieren</button>`;
+}else if(!d||!d.e||d.e.length===0){
 h=`<div class="empty">
 <div class="empty-icon">🏋️‍♂️</div>
 <div class="empty-text">Noch keine Übungen</div>
@@ -382,8 +392,20 @@ h+=`<div class="set ${s.d?'done':''}">
 h+=`</div>`;
 });
 }
+if(!(d&&d.rest)){
 h+=`<button class="add-btn" onclick="openAddModal()">➕ Neue Übung</button>`;
+if(!d||!d.e||d.e.length===0){
+h+=`<button class="add-btn" style="background:#5E5CE6" onclick="markRestDay()">😴 Ruhetag markieren</button>`;
+}
+}
 $('ex').innerHTML=h;
+}
+
+function removeRestDay(){
+const k=dt;
+if(w[k])delete w[k].rest;
+s();r();
+showToast('💪 Bereit zum Training!');
 }
 
 // Update Set
@@ -533,6 +555,195 @@ w[k].e.splice(i,1);
 if(w[k].e.length===0)delete w[k];
 s();r();
 }
+}
+
+// Mark Rest Day
+function markRestDay(){
+const k=dt;
+if(!w[k])w[k]={};
+w[k].rest=true;
+s();r();
+showToast('😴 Ruhetag markiert');
+}
+
+function removeRestDay(){
+const k=dt;
+if(w[k])delete w[k].rest;
+s();r();
+showToast('💪 Bereit zum Training!');
+}
+
+// Stats Functions
+function openStats(){
+const m=document.createElement('div');
+m.className='modal open';
+m.onclick=e=>{if(e.target===m)m.remove()};
+
+// Calculate stats
+const stats=calculateStats();
+let h=`<div class="modal-content" style="max-height:90vh">
+<div class="modal-header">
+<h3>📊 Statistiken</h3>
+<button class="close-modal" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+</div>`;
+
+// Streak and Training Days
+h+=`<div class="settings-section">
+<div class="settings-title">Training Übersicht</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+<div style="background:#2c2c2e;padding:16px;border-radius:12px;text-align:center">
+<div style="font-size:32px;margin-bottom:4px">🔥 ${stats.streak}</div>
+<div style="font-size:12px;color:#8E8E93">Tage Streak</div>
+</div>
+<div style="background:#2c2c2e;padding:16px;border-radius:12px;text-align:center">
+<div style="font-size:32px;margin-bottom:4px">${stats.totalDays}</div>
+<div style="font-size:12px;color:#8E8E93">Trainingstage (30T)</div>
+</div>
+</div>`;
+
+// Calendar Heatmap
+h+=`<div style="background:#2c2c2e;padding:12px;border-radius:12px;margin-bottom:16px">
+<div style="font-size:14px;font-weight:600;margin-bottom:10px">Letzte 4 Wochen</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">`;
+for(let i=27;i>=0;i--){
+const date=new Date();
+date.setDate(date.getDate()-i);
+const dateStr=date.toISOString().split('T')[0];
+const dayData=w[dateStr];
+let color='#1c1c1e';
+let emoji='';
+if(dayData){
+if(dayData.rest)color='#5E5CE6',emoji='😴';
+else if(dayData.e&&dayData.e.length>0)color='#34C759',emoji='💪';
+}
+h+=`<div style="background:${color};aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px">${emoji}</div>`;
+}
+h+=`</div>
+<div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:#8E8E93">
+<span>💪 Training</span><span>😴 Ruhetag</span>
+</div>
+</div>`;
+h+=`</div>`;
+
+// Exercise Progress
+if(stats.exercises.length>0){
+h+=`<div class="settings-section">
+<div class="settings-title">Fortschritt nach Übung</div>`;
+stats.exercises.forEach(ex=>{
+const trend=ex.trend>0?'📈':ex.trend<0?'📉':'➡️';
+const trendColor=ex.trend>0?'#34C759':ex.trend<0?'#FF3B30':'#8E8E93';
+h+=`<div style="background:#2c2c2e;padding:12px;border-radius:10px;margin-bottom:8px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<div style="font-weight:600">${ex.name}</div>
+<div style="color:${trendColor}">${trend}</div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:13px;color:#8E8E93">
+<span>Letztes: ${ex.lastWeight}kg</span>
+<span>Best: ${ex.maxWeight}kg</span>
+</div>`;
+if(ex.history.length>1){
+h+=`<div style="margin-top:8px;height:60px;position:relative">`;
+const max=Math.max(...ex.history.map(h=>h.weight));
+const min=Math.min(...ex.history.map(h=>h.weight));
+const range=max-min||1;
+ex.history.forEach((point,i)=>{
+const x=(i/(ex.history.length-1))*100;
+const y=100-((point.weight-min)/range)*100;
+if(i>0){
+const prevX=((i-1)/(ex.history.length-1))*100;
+const prevY=100-((ex.history[i-1].weight-min)/range)*100;
+h+=`<svg style="position:absolute;inset:0;width:100%;height:100%">
+<line x1="${prevX}%" y1="${prevY}%" x2="${x}%" y2="${y}%" stroke="#007AFF" stroke-width="2"/>
+<circle cx="${x}%" cy="${y}%" r="3" fill="#007AFF"/>
+</svg>`;
+}
+});
+h+=`</div>`;
+}
+h+=`</div>`;
+});
+h+=`</div>`;
+}
+
+h+=`<button class="modal-btn secondary" onclick="this.parentElement.parentElement.remove()">Schließen</button>
+</div>`;
+m.innerHTML=h;
+document.body.appendChild(m);
+}
+
+function calculateStats(){
+const stats={
+streak:0,
+totalDays:0,
+exercises:[]
+};
+
+// Calculate streak
+let streak=0;
+const today=new Date();
+for(let i=0;i<365;i++){
+const date=new Date(today);
+date.setDate(date.getDate()-i);
+const dateStr=date.toISOString().split('T')[0];
+const dayData=w[dateStr];
+if(dayData&&(dayData.rest||(dayData.e&&dayData.e.length>0))){
+if(i===streak)streak++;
+else if(streak>0)break;
+}else if(i===0){
+// Today is empty, check yesterday
+}else if(streak>0){
+break;
+}
+}
+stats.streak=streak;
+
+// Count training days in last 30 days
+for(let i=0;i<30;i++){
+const date=new Date();
+date.setDate(date.getDate()-i);
+const dateStr=date.toISOString().split('T')[0];
+if(w[dateStr]&&w[dateStr].e&&w[dateStr].e.length>0){
+stats.totalDays++;
+}
+}
+
+// Exercise progress
+const exerciseMap={};
+Object.keys(w).forEach(date=>{
+if(w[date]&&w[date].e){
+w[date].e.forEach(ex=>{
+if(!exerciseMap[ex.n])exerciseMap[ex.n]={history:[],name:ex.n};
+const maxWeight=Math.max(...ex.s.map(s=>parseFloat(s.w)||0));
+if(maxWeight>0){
+exerciseMap[ex.n].history.push({date,weight:maxWeight});
+}
+});
+}
+});
+
+Object.values(exerciseMap).forEach(ex=>{
+if(ex.history.length>0){
+ex.history.sort((a,b)=>a.date.localeCompare(b.date));
+ex.lastWeight=ex.history[ex.history.length-1].weight;
+ex.maxWeight=Math.max(...ex.history.map(h=>h.weight));
+if(ex.history.length>1){
+const recent=ex.history.slice(-3);
+const older=ex.history.slice(-6,-3);
+if(older.length>0){
+const recentAvg=recent.reduce((a,b)=>a+b.weight,0)/recent.length;
+const olderAvg=older.reduce((a,b)=>a+b.weight,0)/older.length;
+ex.trend=recentAvg>olderAvg?1:recentAvg<olderAvg?-1:0;
+}else{
+ex.trend=0;
+}
+}else{
+ex.trend=0;
+}
+stats.exercises.push(ex);
+}
+});
+
+return stats;
 }
 
 // Open Add Modal with day template option if available
