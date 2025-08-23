@@ -1,5 +1,4 @@
-// Date picker - not needed anymore since we use inline onclick
-// Removed openDatePicker function<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -24,7 +23,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-seri
 .nav{display:flex;gap:6px;align-items:center}
 .nav-btn{background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border:none;color:#fff;padding:10px;border-radius:10px;font-size:18px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;transition:all 0.2s}
 .nav-btn:active{background:rgba(255,255,255,0.25);transform:scale(0.95)}
-.date-btn{flex:1;text-align:center;font-size:15px;font-weight:600;padding:10px 16px}
+.date-btn{flex:1;text-align:center;font-size:15px;font-weight:600;padding:10px 16px;position:relative}
+.date-input{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer}
 
 /* Content */
 .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;padding-top:calc(140px + env(safe-area-inset-top));padding-bottom:30px;background:#000}
@@ -45,7 +45,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-seri
 .input{background:#1c1c1e;border:1px solid #3a3a3c;border-radius:8px;padding:9px;color:#fff;font-size:16px;font-weight:500;text-align:center;width:100%;-webkit-appearance:none;transition:all 0.2s}
 .input:focus{border-color:#007AFF;outline:none}
 .check-btn{width:46px;height:40px;border-radius:10px;background:#2c2c2e;border:2px solid #3a3a3c;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;transition:all 0.2s}
-.check-btn.checked{background:#34C759;border-color:#34C759;color:#fff}}
+.check-btn.checked{background:#34C759;border-color:#34C759;color:#fff}
 
 /* Empty State */
 .empty{text-align:center;padding:60px 20px;color:#8E8E93}
@@ -91,8 +91,6 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 .settings-desc{font-size:12px;color:#8E8E93}
 .settings-arrow{color:#3a3a3c;font-size:16px}
 
-input[type="date"]{position:absolute;opacity:0;pointer-events:none;left:-9999px}
-
 /* Responsive */
 @media (max-width:375px){
 .header h1{font-size:24px}
@@ -110,8 +108,10 @@ input[type="date"]{position:absolute;opacity:0;pointer-events:none;left:-9999px}
 </div>
 <div class="nav">
 <button class="nav-btn" onclick="cd(-1)">←</button>
-<input type="date" id="di" onchange="sd(this.value)" style="position:absolute;opacity:0;pointer-events:none">
-<label for="di" class="nav-btn date-btn" id="dd" style="flex:1;text-align:center" onclick="$('di').style.pointerEvents='auto';$('di').click();$('di').style.pointerEvents='none'"></label>
+<div class="nav-btn date-btn" id="dd">
+<span id="date-text"></span>
+<input type="date" class="date-input" id="di" onchange="sd(this.value)">
+</div>
 <button class="nav-btn" onclick="cd(1)">→</button>
 </div>
 </div>
@@ -177,7 +177,7 @@ input[type="date"]{position:absolute;opacity:0;pointer-events:none;left:-9999px}
 <div class="settings-icon export">📤</div>
 <div class="settings-info">
 <div class="settings-name">Export</div>
-<div class="settings-desc">Trainigsdaten als JSON exportieren</div>
+<div class="settings-desc">Trainingsdaten als JSON exportieren</div>
 </div>
 <div class="settings-arrow">›</div>
 </div>
@@ -196,7 +196,7 @@ input[type="date"]{position:absolute;opacity:0;pointer-events:none;left:-9999px}
 <div class="settings-icon github">☁️</div>
 <div class="settings-info">
 <div class="settings-name">GitHub Sync</div>
-<div class="settings-desc">${localStorage.getItem('ght')?'✅ Aktiviert':'Automatische Synchronisation einrichten'}</div>
+<div class="settings-desc" id="github-status">Automatische Synchronisation einrichten</div>
 </div>
 <div class="settings-arrow">›</div>
 </div>
@@ -217,7 +217,7 @@ function s(){localStorage.setItem('w',JSON.stringify(w));if(localStorage.getItem
 function fd(){
 const d=new Date(dt+'T12:00');
 const mo=['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()];
-$('dd').textContent=`${mo}, ${d.getDate()}.${(d.getMonth()+1+'').padStart(2,'0')}.${d.getFullYear()}`;
+$('date-text').textContent=`${mo}, ${d.getDate()}.${(d.getMonth()+1+'').padStart(2,'0')}.${d.getFullYear()}`;
 $('di').value=dt;
 }
 
@@ -314,7 +314,17 @@ s();r();
 
 // Modal Functions
 function cm(i){$(i).classList.remove('open')}
-function openSettings(){$('sm').classList.add('open')}
+function openSettings(){
+updateGithubStatus();
+$('sm').classList.add('open');
+}
+
+function updateGithubStatus(){
+const status = $('github-status');
+if(status && localStorage.getItem('ght')){
+status.textContent = '✅ Aktiviert';
+}
+}
 
 // Export
 function xp(){
