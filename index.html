@@ -232,7 +232,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 </div>
 
 <!-- Settings Modal -->
-<div class="modal" id="sm" onclick="if(event.target.id=='sm')cm('sm')">
+<div class="modal" id="sm">
 <div class="modal-content">
 <div class="modal-header">
 <h3>Einstellungen</h3>
@@ -283,7 +283,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 </div>
 
 <!-- Templates Modal -->
-<div class="modal" id="tm" onclick="if(event.target.id=='tm')cm('tm')">
+<div class="modal" id="tm">
 <div class="modal-content">
 <div class="modal-header">
 <h3>Templates</h3>
@@ -622,8 +622,10 @@ if(n){
 if(editingTemplate!==null){
 et[editingTemplate]={n,s,r,t,m};
 editingTemplate=null;
+alert('✅ Template aktualisiert!');
 }else{
 et.push({n,s,r,t,m});
+alert('✅ Template erstellt!');
 }
 s();
 document.querySelector('.modal.open').remove();
@@ -724,8 +726,10 @@ if(n&&window.tempDayExercises&&window.tempDayExercises.length>0){
 if(editingTemplate!==null){
 dts[editingTemplate]={n,exercises:window.tempDayExercises};
 editingTemplate=null;
+alert('✅ Tagesplan aktualisiert!');
 }else{
 dts.push({n,exercises:window.tempDayExercises});
+alert('✅ Tagesplan erstellt!');
 }
 s();
 window.tempDayExercises=null;
@@ -733,7 +737,7 @@ document.querySelector('.modal.open').remove();
 renderTemplates();
 $('tm').classList.add('open');
 }else{
-alert('Name und mindestens eine Übung erforderlich!');
+alert('⚠️ Name und mindestens eine Übung erforderlich!');
 }
 }
 
