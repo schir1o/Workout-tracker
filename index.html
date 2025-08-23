@@ -32,7 +32,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-seri
 
 /* Cards & Exercises */
 .exercise{background:#1c1c1e;border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid #2c2c2e}
-.exercise-header{display:flex;align-items:center;margin-bottom:12px;gap:8px}
+.exercise-header{display:flex;align-items:center;margin-bottom:12px;gap:6px}
 .exercise-name{font-size:17px;font-weight:600;flex:1}
 .muscle-tag{background:#007AFF;padding:4px 10px;border-radius:16px;font-size:11px;font-weight:600;white-space:nowrap}
 .delete-btn{background:#FF3B30;border:none;color:#fff;width:36px;height:36px;border-radius:10px;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
@@ -368,6 +368,7 @@ h+=`<div class="exercise">
 <div class="exercise-header">
 <div class="exercise-name">${x.n}</div>
 <div class="muscle-tag">${x.m||'Andere'}</div>
+<button class="edit-btn" onclick="editExercise(${i})" style="background:#007AFF;border:none;color:#fff;width:36px;height:36px;border-radius:10px;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s">✏️</button>
 <button class="delete-btn" onclick="if(confirm('Übung wirklich löschen?'))re(${i})">×</button>
 </div>`;
 x.s.forEach((s,j)=>{
@@ -426,6 +427,101 @@ if(!w[k])w[k]={e:[]};
 w[k].e.push({n,r:rp,t:tp,m:mg,s:Array(st).fill().map(()=>({w:'',r:'',d:0}))});
 $('nn').value='';$('ns').value='3';$('nr').value='8-12';$('nt').value='kg';$('nm').value='Brust';
 cm('mam');cm('am');s();r();
+}
+}
+
+// Edit Exercise
+function editExercise(i){
+const k=dt;
+if(!w[k]||!w[k].e||!w[k].e[i])return;
+const ex=w[k].e[i];
+const m=document.createElement('div');
+m.className='modal open';
+m.onclick=e=>{if(e.target===m)m.remove()};
+m.innerHTML=`<div class="modal-content">
+<div class="modal-header">
+<h3>Übung bearbeiten</h3>
+<button class="close-modal" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+</div>
+<div class="form-group">
+<label class="label">Name</label>
+<input type="text" id="edit-name" value="${ex.n}" autocomplete="off">
+</div>
+<div class="form-group">
+<label class="label">Sätze</label>
+<div style="display:flex;gap:10px;align-items:center">
+<button onclick="adjustSets(-1)" style="width:40px;height:40px;background:#FF3B30;border:none;border-radius:10px;color:#fff;font-size:20px;cursor:pointer">−</button>
+<input type="number" id="edit-sets" value="${ex.s.length}" min="1" max="10" inputmode="numeric" style="text-align:center">
+<button onclick="adjustSets(1)" style="width:40px;height:40px;background:#34C759;border:none;border-radius:10px;color:#fff;font-size:20px;cursor:pointer">+</button>
+</div>
+</div>
+<div class="form-group">
+<label class="label">Wiederholungen</label>
+<input type="text" id="edit-reps" value="${ex.r||'8-12'}" placeholder="8-12" autocomplete="off">
+</div>
+<div class="form-group">
+<label class="label">Typ</label>
+<select id="edit-type">
+<option value="kg" ${ex.t==='kg'?'selected':''}>Gewicht (kg)</option>
+<option value="m" ${ex.t==='m'?'selected':''}>Distanz (m)</option>
+<option value="min" ${ex.t==='min'?'selected':''}>Zeit (min)</option>
+</select>
+</div>
+<div class="form-group">
+<label class="label">Muskelgruppe</label>
+<select id="edit-muscle">
+${['Brust','Rücken','Beine','Schultern','Arme','Bauch','Cardio','Andere'].map(m=>`<option value="${m}" ${ex.m===m?'selected':''}>${m}</option>`).join('')}
+</select>
+</div>
+<button class="modal-btn primary" onclick="saveExerciseEdit(${i})">Speichern</button>
+<button class="modal-btn secondary" onclick="this.parentElement.parentElement.remove()">Abbrechen</button>
+</div>`;
+document.body.appendChild(m);
+window.currentExerciseIndex=i;
+window.currentSets=ex.s.length;
+}
+
+function adjustSets(delta){
+const input=$('edit-sets');
+let val=parseInt(input.value)||1;
+val=Math.max(1,Math.min(10,val+delta));
+input.value=val;
+window.currentSets=val;
+}
+
+function saveExerciseEdit(i){
+const k=dt;
+if(!w[k]||!w[k].e||!w[k].e[i])return;
+const name=$('edit-name').value.trim();
+const sets=parseInt($('edit-sets').value)||3;
+const reps=$('edit-reps').value||'8-12';
+const type=$('edit-type').value||'kg';
+const muscle=$('edit-muscle').value||'Andere';
+if(name){
+const ex=w[k].e[i];
+ex.n=name;
+ex.r=reps;
+ex.t=type;
+ex.m=muscle;
+// Adjust sets array
+const currentSetsCount=ex.s.length;
+if(sets>currentSetsCount){
+// Add new sets
+for(let j=currentSetsCount;j<sets;j++){
+ex.s.push({w:'',r:'',d:0});
+}
+}else if(sets<currentSetsCount){
+// Remove sets (ask for confirmation if they have data)
+const removedSets=ex.s.slice(sets);
+const hasData=removedSets.some(s=>s.w||s.r);
+if(hasData&&!confirm('Die letzten Sätze haben Daten. Wirklich löschen?')){
+return;
+}
+ex.s=ex.s.slice(0,sets);
+}
+s();r();
+showToast('✅ Übung aktualisiert');
+document.querySelector('.modal.open').remove();
 }
 }
 
