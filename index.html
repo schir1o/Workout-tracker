@@ -382,9 +382,6 @@ h+=`</div>`;
 });
 }
 h+=`<button class="add-btn" onclick="openAddModal()">➕ Neue Übung</button>`;
-if((!d||!d.e||d.e.length===0)&&dts.length>0){
-h+=`<button class="add-btn template-btn" onclick="showDayTemplates()">📋 Tagesplan laden</button>`;
-}
 $('ex').innerHTML=h;
 }
 
