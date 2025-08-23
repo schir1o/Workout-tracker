@@ -53,9 +53,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-seri
 .empty-text{font-size:18px;font-weight:600;margin-bottom:8px}
 .empty small{display:block;margin-top:4px;font-size:14px;opacity:0.7}
 
-/* Add Button */
+/* Buttons */
 .add-btn{width:100%;padding:15px;background:#007AFF;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;transition:all 0.2s}
 .add-btn:active{transform:scale(0.98);background:#0051D5}
+.template-btn{background:#5E5CE6;margin-top:8px}
+.template-btn:active{background:#4B47D5}
 
 /* Modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:999;display:none;align-items:flex-end;padding:0}
@@ -75,6 +77,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 .modal-btn.secondary{background:#3a3a3c;color:#fff}
 .modal-btn.danger{background:#FF3B30;color:#fff}
 .modal-btn.success{background:#34C759;color:#fff}
+.modal-btn.purple{background:#5E5CE6;color:#fff}
 .modal-btn:active{transform:scale(0.98)}
 
 /* Settings Items */
@@ -86,10 +89,39 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 .settings-icon.export{background:#5E5CE6}
 .settings-icon.import{background:#FF9500}
 .settings-icon.github{background:#34C759}
+.settings-icon.templates{background:#FF2D55}
 .settings-info{flex:1}
 .settings-name{font-size:15px;font-weight:600;margin-bottom:2px}
 .settings-desc{font-size:12px;color:#8E8E93}
 .settings-arrow{color:#3a3a3c;font-size:16px}
+
+/* Template List */
+.template-list{margin-top:16px}
+.template-item{background:#2c2c2e;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.template-icon{width:40px;height:40px;background:#007AFF;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.template-icon.day{background:#5E5CE6}
+.template-info{flex:1}
+.template-name{font-size:15px;font-weight:600}
+.template-details{font-size:12px;color:#8E8E93;margin-top:2px}
+.template-actions{display:flex;gap:6px}
+.template-btn{width:36px;height:36px;border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.2s}
+.template-btn.edit{background:#007AFF;color:#fff}
+.template-btn.delete{background:#FF3B30;color:#fff}
+.template-btn.use{background:#34C759;color:#fff}
+.template-btn:active{transform:scale(0.9)}
+
+/* Tabs */
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{flex:1;padding:10px;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:10px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.tab.active{background:#007AFF;border-color:#007AFF;color:#fff}
+
+/* Choice Grid */
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.choice-card{background:#2c2c2e;border:2px solid #3a3a3c;border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s}
+.choice-card:active{transform:scale(0.95);background:#3a3a3c}
+.choice-icon{font-size:36px;margin-bottom:8px}
+.choice-title{font-size:16px;font-weight:600;margin-bottom:4px}
+.choice-desc{font-size:12px;color:#8E8E93}
 
 /* Responsive */
 @media (max-width:375px){
@@ -123,8 +155,30 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 <div class="modal" id="am" onclick="if(event.target.id=='am')cm('am')">
 <div class="modal-content">
 <div class="modal-header">
-<h3>Neue Übung</h3>
+<h3>Übung hinzufügen</h3>
 <button class="close-modal" onclick="cm('am')">×</button>
+</div>
+<div class="choice-grid">
+<div class="choice-card" onclick="showManualAdd()">
+<div class="choice-icon">✏️</div>
+<div class="choice-title">Manuell</div>
+<div class="choice-desc">Neue Übung erstellen</div>
+</div>
+<div class="choice-card" onclick="showTemplateSelect()">
+<div class="choice-icon">📋</div>
+<div class="choice-title">Template</div>
+<div class="choice-desc">Aus Vorlage wählen</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Manual Add Form -->
+<div class="modal" id="mam" onclick="if(event.target.id=='mam')cm('mam')">
+<div class="modal-content">
+<div class="modal-header">
+<h3>Neue Übung</h3>
+<button class="close-modal" onclick="cm('mam')">×</button>
 </div>
 <div class="form-group">
 <label class="label">Name</label>
@@ -160,7 +214,20 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 </select>
 </div>
 <button class="modal-btn primary" onclick="ae()">Übung hinzufügen</button>
-<button class="modal-btn secondary" onclick="cm('am')">Abbrechen</button>
+<button class="modal-btn purple" onclick="saveAsTemplate()">Als Template speichern</button>
+<button class="modal-btn secondary" onclick="cm('mam')">Abbrechen</button>
+</div>
+</div>
+
+<!-- Template Select Modal -->
+<div class="modal" id="tsm" onclick="if(event.target.id=='tsm')cm('tsm')">
+<div class="modal-content">
+<div class="modal-header">
+<h3>Template wählen</h3>
+<button class="close-modal" onclick="cm('tsm')">×</button>
+</div>
+<div id="template-select-list"></div>
+<button class="modal-btn secondary" onclick="cm('tsm');$('am').classList.add('open')">Zurück</button>
 </div>
 </div>
 
@@ -170,6 +237,17 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 <div class="modal-header">
 <h3>Einstellungen</h3>
 <button class="close-modal" onclick="cm('sm')">×</button>
+</div>
+<div class="settings-section">
+<div class="settings-title">Templates</div>
+<div class="settings-item" onclick="openTemplates()">
+<div class="settings-icon templates">📝</div>
+<div class="settings-info">
+<div class="settings-name">Templates verwalten</div>
+<div class="settings-desc">Übungen und Tagespläne bearbeiten</div>
+</div>
+<div class="settings-arrow">›</div>
+</div>
 </div>
 <div class="settings-section">
 <div class="settings-title">Daten</div>
@@ -204,14 +282,47 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 </div>
 </div>
 
+<!-- Templates Modal -->
+<div class="modal" id="tm" onclick="if(event.target.id=='tm')cm('tm')">
+<div class="modal-content">
+<div class="modal-header">
+<h3>Templates</h3>
+<button class="close-modal" onclick="cm('tm')">×</button>
+</div>
+<div class="tabs">
+<div class="tab active" id="tab-ex" onclick="switchTab('ex')">Übungen</div>
+<div class="tab" id="tab-day" onclick="switchTab('day')">Tagespläne</div>
+</div>
+<div id="template-list"></div>
+<button class="modal-btn primary" id="add-template-btn" onclick="openAddTemplate()">➕ Übungs-Template</button>
+<button class="modal-btn secondary" onclick="cm('tm')">Schließen</button>
+</div>
+</div>
+
 <script>
 const $=id=>document.getElementById(id);
 let dt=new Date().toISOString().split('T')[0];
 let w={};
+let et=[];  // Exercise templates
+let dts=[];  // Day templates
+let currentTab='ex';
+let editingTemplate=null;
 
 // Load/Save
-function l(){try{w=JSON.parse(localStorage.getItem('w'))||{}}catch{}}
-function s(){localStorage.setItem('w',JSON.stringify(w));if(localStorage.getItem('ght'))ghs()}
+function l(){
+try{
+const data=JSON.parse(localStorage.getItem('w'))||{};
+w=data.w||data||{};
+et=data.et||[];
+dts=data.dts||[];
+}catch{w={};et=[];dts=[];}
+}
+
+function s(){
+const data={w,et,dts,d:new Date()};
+localStorage.setItem('w',JSON.stringify(data));
+if(localStorage.getItem('ght'))ghs();
+}
 
 // Date
 function fd(){
@@ -264,6 +375,9 @@ h+=`</div>`;
 });
 }
 h+=`<button class="add-btn" onclick="$('am').classList.add('open')">➕ Neue Übung</button>`;
+if((!d||!d.e||d.e.length===0)&&dts.length>0){
+h+=`<button class="add-btn template-btn" onclick="showDayTemplates()">📋 Tagesplan laden</button>`;
+}
 $('ex').innerHTML=h;
 }
 
@@ -298,7 +412,7 @@ const k=dt;
 if(!w[k])w[k]={e:[]};
 w[k].e.push({n,r:rp,t:tp,m:mg,s:Array(st).fill().map(()=>({w:'',r:'',d:0}))});
 $('nn').value='';$('ns').value='3';$('nr').value='8-12';$('nt').value='kg';$('nm').value='Brust';
-cm('am');s();r();
+cm('mam');cm('am');s();r();
 }
 }
 
@@ -309,6 +423,337 @@ if(w[k]&&w[k].e){
 w[k].e.splice(i,1);
 if(w[k].e.length===0)delete w[k];
 s();r();
+}
+}
+
+// Template Functions
+function showManualAdd(){
+cm('am');
+$('mam').classList.add('open');
+}
+
+function showTemplateSelect(){
+cm('am');
+renderTemplateSelect();
+$('tsm').classList.add('open');
+}
+
+function renderTemplateSelect(){
+let h='';
+if(et.length===0){
+h='<div class="empty"><div class="empty-text">Keine Templates vorhanden</div><small>Erstelle Templates in den Einstellungen</small></div>';
+}else{
+et.forEach((t,i)=>{
+h+=`<div class="template-item">
+<div class="template-icon">💪</div>
+<div class="template-info">
+<div class="template-name">${t.n}</div>
+<div class="template-details">${t.s} Sätze × ${t.r} • ${t.m}</div>
+</div>
+<button class="template-btn use" onclick="useExerciseTemplate(${i})">→</button>
+</div>`;
+});
+}
+$('template-select-list').innerHTML=h;
+}
+
+function useExerciseTemplate(i){
+const t=et[i];
+if(t){
+const k=dt;
+if(!w[k])w[k]={e:[]};
+w[k].e.push({
+n:t.n,
+r:t.r,
+t:t.t||'kg',
+m:t.m,
+s:Array(t.s).fill().map(()=>({w:'',r:'',d:0}))
+});
+cm('tsm');s();r();
+}
+}
+
+function showDayTemplates(){
+let h='<div class="modal open" onclick="if(event.target===this)this.remove()"><div class="modal-content">';
+h+='<div class="modal-header"><h3>Tagesplan wählen</h3><button class="close-modal" onclick="this.parentElement.parentElement.parentElement.remove()">×</button></div>';
+if(dts.length===0){
+h+='<div class="empty"><div class="empty-text">Keine Tagespläne vorhanden</div></div>';
+}else{
+dts.forEach((t,i)=>{
+const exCount=t.exercises?t.exercises.length:0;
+h+=`<div class="template-item">
+<div class="template-icon day">📅</div>
+<div class="template-info">
+<div class="template-name">${t.n}</div>
+<div class="template-details">${exCount} Übungen</div>
+</div>
+<button class="template-btn use" onclick="useDayTemplate(${i});this.parentElement.parentElement.parentElement.remove()">→</button>
+</div>`;
+});
+}
+h+='<button class="modal-btn secondary" onclick="this.parentElement.parentElement.remove()">Abbrechen</button>';
+h+='</div></div>';
+document.body.insertAdjacentHTML('beforeend',h);
+}
+
+function useDayTemplate(i){
+const t=dts[i];
+if(t&&t.exercises){
+const k=dt;
+if(!w[k])w[k]={e:[]};
+t.exercises.forEach(ex=>{
+w[k].e.push({
+n:ex.n,
+r:ex.r,
+t:ex.t||'kg',
+m:ex.m,
+s:Array(ex.s).fill().map(()=>({w:'',r:'',d:0}))
+});
+});
+s();r();
+}
+}
+
+function saveAsTemplate(){
+const n=$('nn').value.trim();
+const st=parseInt($('ns').value)||3;
+const rp=$('nr').value||'8-12';
+const tp=$('nt').value||'kg';
+const mg=$('nm').value||'Andere';
+if(n){
+et.push({n,s:st,r:rp,t:tp,m:mg});
+s();
+alert('✅ Als Template gespeichert!');
+}
+}
+
+// Templates Management
+function openTemplates(){
+cm('sm');
+renderTemplates();
+$('tm').classList.add('open');
+}
+
+function switchTab(tab){
+currentTab=tab;
+$('tab-ex').classList.toggle('active',tab==='ex');
+$('tab-day').classList.toggle('active',tab==='day');
+$('add-template-btn').textContent=tab==='ex'?'➕ Übungs-Template':'➕ Tagesplan';
+renderTemplates();
+}
+
+function renderTemplates(){
+let h='';
+const templates=currentTab==='ex'?et:dts;
+if(templates.length===0){
+h=`<div class="empty">
+<div class="empty-text">Keine ${currentTab==='ex'?'Übungs-Templates':'Tagespläne'} vorhanden</div>
+<small>Klicke unten um zu erstellen</small>
+</div>`;
+}else{
+templates.forEach((t,i)=>{
+if(currentTab==='ex'){
+h+=`<div class="template-item">
+<div class="template-icon">💪</div>
+<div class="template-info">
+<div class="template-name">${t.n}</div>
+<div class="template-details">${t.s} Sätze × ${t.r} • ${t.m}</div>
+</div>
+<div class="template-actions">
+<button class="template-btn edit" onclick="editTemplate(${i})">✏️</button>
+<button class="template-btn delete" onclick="deleteTemplate(${i})">×</button>
+</div>
+</div>`;
+}else{
+const exCount=t.exercises?t.exercises.length:0;
+h+=`<div class="template-item">
+<div class="template-icon day">📅</div>
+<div class="template-info">
+<div class="template-name">${t.n}</div>
+<div class="template-details">${exCount} Übungen</div>
+</div>
+<div class="template-actions">
+<button class="template-btn edit" onclick="editTemplate(${i})">✏️</button>
+<button class="template-btn delete" onclick="deleteTemplate(${i})">×</button>
+</div>
+</div>`;
+}
+});
+}
+$('template-list').innerHTML=h;
+}
+
+function openAddTemplate(){
+if(currentTab==='ex'){
+openAddExerciseTemplate();
+}else{
+openAddDayTemplate();
+}
+}
+
+function openAddExerciseTemplate(){
+cm('tm');
+const m=document.createElement('div');
+m.className='modal open';
+m.onclick=e=>{if(e.target===m)m.remove()};
+m.innerHTML=`<div class="modal-content">
+<div class="modal-header">
+<h3>${editingTemplate!==null?'Template bearbeiten':'Neues Übungs-Template'}</h3>
+<button class="close-modal" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+</div>
+<div class="form-group"><label class="label">Name</label><input type="text" id="tname" placeholder="z.B. Bankdrücken" value="${editingTemplate!==null?et[editingTemplate].n:''}" autocomplete="off"></div>
+<div class="form-group"><label class="label">Sätze</label><input type="number" id="tsets" value="${editingTemplate!==null?et[editingTemplate].s:'3'}" min="1" max="10" inputmode="numeric"></div>
+<div class="form-group"><label class="label">Wiederholungen</label><input type="text" id="treps" value="${editingTemplate!==null?et[editingTemplate].r:'8-12'}" placeholder="8-12" autocomplete="off"></div>
+<div class="form-group"><label class="label">Typ</label><select id="ttype"><option value="kg" ${editingTemplate!==null&&et[editingTemplate].t==='kg'?'selected':''}>Gewicht (kg)</option><option value="m" ${editingTemplate!==null&&et[editingTemplate].t==='m'?'selected':''}>Distanz (m)</option><option value="min" ${editingTemplate!==null&&et[editingTemplate].t==='min'?'selected':''}>Zeit (min)</option></select></div>
+<div class="form-group"><label class="label">Muskelgruppe</label><select id="tmuscle">${['Brust','Rücken','Beine','Schultern','Arme','Bauch','Cardio','Andere'].map(m=>`<option value="${m}" ${editingTemplate!==null&&et[editingTemplate].m===m?'selected':''}>${m}</option>`).join('')}</select></div>
+<button class="modal-btn primary" onclick="saveExerciseTemplate()">${editingTemplate!==null?'Speichern':'Template erstellen'}</button>
+<button class="modal-btn secondary" onclick="editingTemplate=null;this.parentElement.parentElement.remove()">Abbrechen</button>
+</div>`;
+document.body.appendChild(m);
+}
+
+function saveExerciseTemplate(){
+const n=$('tname').value.trim();
+const s=parseInt($('tsets').value)||3;
+const r=$('treps').value||'8-12';
+const t=$('ttype').value||'kg';
+const m=$('tmuscle').value||'Andere';
+if(n){
+if(editingTemplate!==null){
+et[editingTemplate]={n,s,r,t,m};
+editingTemplate=null;
+}else{
+et.push({n,s,r,t,m});
+}
+s();
+document.querySelector('.modal.open').remove();
+renderTemplates();
+$('tm').classList.add('open');
+}
+}
+
+function openAddDayTemplate(){
+cm('tm');
+const m=document.createElement('div');
+m.className='modal open';
+m.onclick=e=>{if(e.target===m)m.remove()};
+let exercises=editingTemplate!==null&&dts[editingTemplate].exercises?[...dts[editingTemplate].exercises]:[];
+let h=`<div class="modal-content">
+<div class="modal-header">
+<h3>${editingTemplate!==null?'Tagesplan bearbeiten':'Neuer Tagesplan'}</h3>
+<button class="close-modal" onclick="editingTemplate=null;this.parentElement.parentElement.parentElement.remove()">×</button>
+</div>
+<div class="form-group"><label class="label">Name</label><input type="text" id="dname" placeholder="z.B. Push Day" value="${editingTemplate!==null?dts[editingTemplate].n:''}" autocomplete="off"></div>
+<div class="form-group"><label class="label">Übungen hinzufügen</label><div id="day-exercises"></div></div>
+<button class="modal-btn purple" onclick="addExerciseToDayTemplate()">➕ Übung hinzufügen</button>
+<button class="modal-btn primary" onclick="saveDayTemplate()">${editingTemplate!==null?'Speichern':'Tagesplan erstellen'}</button>
+<button class="modal-btn secondary" onclick="editingTemplate=null;this.parentElement.parentElement.remove()">Abbrechen</button>
+</div>`;
+m.innerHTML=h;
+document.body.appendChild(m);
+window.tempDayExercises=exercises;
+renderDayExercises();
+}
+
+function renderDayExercises(){
+let h='';
+if(window.tempDayExercises&&window.tempDayExercises.length>0){
+window.tempDayExercises.forEach((ex,i)=>{
+h+=`<div class="template-item">
+<div class="template-info">
+<div class="template-name">${ex.n}</div>
+<div class="template-details">${ex.s} Sätze × ${ex.r} • ${ex.m}</div>
+</div>
+<button class="template-btn delete" onclick="removeFromDayTemplate(${i})">×</button>
+</div>`;
+});
+}else{
+h='<div style="padding:10px;color:#8E8E93;text-align:center">Noch keine Übungen</div>';
+}
+$('day-exercises').innerHTML=h;
+}
+
+function addExerciseToDayTemplate(){
+const parent=document.querySelector('.modal.open');
+parent.style.display='none';
+const m=document.createElement('div');
+m.className='modal open';
+m.onclick=e=>{if(e.target===m){m.remove();parent.style.display='flex';}};
+let h=`<div class="modal-content">
+<div class="modal-header">
+<h3>Übung auswählen</h3>
+<button class="close-modal" onclick="this.parentElement.parentElement.parentElement.remove();document.querySelectorAll('.modal')[document.querySelectorAll('.modal').length-2].style.display='flex'">×</button>
+</div>`;
+if(et.length>0){
+h+='<div class="template-list">';
+et.forEach((t,i)=>{
+h+=`<div class="template-item">
+<div class="template-icon">💪</div>
+<div class="template-info">
+<div class="template-name">${t.n}</div>
+<div class="template-details">${t.s} Sätze × ${t.r} • ${t.m}</div>
+</div>
+<button class="template-btn use" onclick="selectForDayTemplate(${i})">+</button>
+</div>`;
+});
+h+='</div>';
+}else{
+h+='<div class="empty"><div class="empty-text">Keine Übungs-Templates vorhanden</div></div>';
+}
+h+='</div>';
+m.innerHTML=h;
+document.body.appendChild(m);
+}
+
+function selectForDayTemplate(i){
+if(!window.tempDayExercises)window.tempDayExercises=[];
+window.tempDayExercises.push({...et[i]});
+document.querySelector('.modal.open').remove();
+document.querySelector('.modal').style.display='flex';
+renderDayExercises();
+}
+
+function removeFromDayTemplate(i){
+window.tempDayExercises.splice(i,1);
+renderDayExercises();
+}
+
+function saveDayTemplate(){
+const n=$('dname').value.trim();
+if(n&&window.tempDayExercises&&window.tempDayExercises.length>0){
+if(editingTemplate!==null){
+dts[editingTemplate]={n,exercises:window.tempDayExercises};
+editingTemplate=null;
+}else{
+dts.push({n,exercises:window.tempDayExercises});
+}
+s();
+window.tempDayExercises=null;
+document.querySelector('.modal.open').remove();
+renderTemplates();
+$('tm').classList.add('open');
+}else{
+alert('Name und mindestens eine Übung erforderlich!');
+}
+}
+
+function editTemplate(i){
+editingTemplate=i;
+if(currentTab==='ex'){
+openAddExerciseTemplate();
+}else{
+openAddDayTemplate();
+}
+}
+
+function deleteTemplate(i){
+if(confirm(`${currentTab==='ex'?'Template':'Tagesplan'} wirklich löschen?`)){
+if(currentTab==='ex'){
+et.splice(i,1);
+}else{
+dts.splice(i,1);
+}
+s();renderTemplates();
 }
 }
 
@@ -339,7 +784,8 @@ status.textContent = 'Automatische Synchronisation einrichten';
 // Export
 function xp(){
 cm('sm');
-const d=JSON.stringify(w,null,2);
+const data={w,et,dts};
+const d=JSON.stringify(data,null,2);
 const b=new Blob([d],{type:'application/json'});
 const u=URL.createObjectURL(b);
 const a=document.createElement('a');
@@ -358,7 +804,11 @@ i.onchange=e=>{
 const r=new FileReader();
 r.onload=ev=>{
 try{
-w=JSON.parse(ev.target.result);
+const data=JSON.parse(ev.target.result);
+if(data.w)w=data.w;
+else if(!data.et&&!data.dts)w=data;
+if(data.et)et=data.et;
+if(data.dts)dts=data.dts;
 s();r();alert('✅ Import erfolgreich!');
 }catch{alert('❌ Fehler beim Import')}
 };
@@ -413,7 +863,8 @@ async function ghs(){
 const t=localStorage.getItem('ght'),u=localStorage.getItem('ghu'),r=localStorage.getItem('ghr')||'Workout-tracker';
 if(!t||!u)return;
 try{
-const d=btoa(unescape(encodeURIComponent(JSON.stringify({w,d:new Date()}))));
+const data={w,et,dts,d:new Date()};
+const d=btoa(unescape(encodeURIComponent(JSON.stringify(data))));
 const s=await gsha();
 await fetch(`https://api.github.com/repos/${u}/${r}/contents/data.json`,{
 method:'PUT',
@@ -447,14 +898,17 @@ const d=await res.json();
 const c=JSON.parse(decodeURIComponent(escape(atob(d.content))));
 if(c.w){
 w=c.w;
-localStorage.setItem('w',JSON.stringify(w));
+et=c.et||[];
+dts=c.dts||[];
+const data={w,et,dts};
+localStorage.setItem('w',JSON.stringify(data));
 localStorage.setItem('gls', new Date().toISOString());
 updateGithubStatus();
 console.log('✅ Von GitHub geladen');
 }
 }else if(res.status===404){
 console.log('📝 Erstelle neue data.json mit leeren Daten');
-w={};
+w={};et=[];dts=[];
 await ghs();
 }
 }catch(e){console.log('GitHub load error:',e)}
