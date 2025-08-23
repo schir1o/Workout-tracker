@@ -123,6 +123,11 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 .choice-title{font-size:16px;font-weight:600;margin-bottom:4px}
 .choice-desc{font-size:12px;color:#8E8E93}
 
+/* Toast Notification */
+.toast{position:fixed;top:calc(20px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:#34C759;color:#fff;padding:12px 20px;border-radius:12px;font-size:15px;font-weight:600;z-index:10000;animation:toastIn 0.3s,toastOut 0.5s 2s forwards;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+@keyframes toastIn{from{transform:translateX(-50%) translateY(-100%);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+@keyframes toastOut{from{transform:translateX(-50%) translateY(0);opacity:1}to{transform:translateX(-50%) translateY(-20px);opacity:0}}
+
 /* Responsive */
 @media (max-width:375px){
 .header h1{font-size:24px}
@@ -400,6 +405,15 @@ s();r();
 }
 }
 
+// Toast notification
+function showToast(msg){
+const t=document.createElement('div');
+t.className='toast';
+t.textContent=msg;
+document.body.appendChild(t);
+setTimeout(()=>t.remove(),2500);
+}
+
 // Add Exercise
 function ae(){
 const n=$('nn').value.trim();
@@ -523,7 +537,7 @@ const mg=$('nm').value||'Andere';
 if(n){
 et.push({n,s:st,r:rp,t:tp,m:mg});
 s();
-alert('✅ Als Template gespeichert!');
+showToast('✅ Als Template gespeichert!');
 }
 }
 
@@ -614,21 +628,26 @@ document.body.appendChild(m);
 
 function saveExerciseTemplate(){
 const n=$('tname').value.trim();
-const s=parseInt($('tsets').value)||3;
-const r=$('treps').value||'8-12';
-const t=$('ttype').value||'kg';
-const m=$('tmuscle').value||'Andere';
+const sets=parseInt($('tsets').value)||3;
+const reps=$('treps').value||'8-12';
+const type=$('ttype').value||'kg';
+const muscle=$('tmuscle').value||'Andere';
 if(n){
 if(editingTemplate!==null){
-et[editingTemplate]={n,s,r,t,m};
+et[editingTemplate]={n,s:sets,r:reps,t:type,m:muscle};
 editingTemplate=null;
-alert('✅ Template aktualisiert!');
+showToast('✅ Template aktualisiert!');
 }else{
-et.push({n,s,r,t,m});
-alert('✅ Template erstellt!');
+et.push({n,s:sets,r:reps,t:type,m:muscle});
+showToast('✅ Template erstellt!');
 }
-s();
-document.querySelector('.modal.open').remove();
+s();  // This calls the save function
+// Close the creation modal
+const modals=document.querySelectorAll('.modal.open');
+modals.forEach(m=>{
+if(m.querySelector('#tname'))m.remove();
+});
+// Refresh and reopen template list
 renderTemplates();
 $('tm').classList.add('open');
 }
@@ -726,18 +745,23 @@ if(n&&window.tempDayExercises&&window.tempDayExercises.length>0){
 if(editingTemplate!==null){
 dts[editingTemplate]={n,exercises:window.tempDayExercises};
 editingTemplate=null;
-alert('✅ Tagesplan aktualisiert!');
+showToast('✅ Tagesplan aktualisiert!');
 }else{
 dts.push({n,exercises:window.tempDayExercises});
-alert('✅ Tagesplan erstellt!');
+showToast('✅ Tagesplan erstellt!');
 }
 s();
 window.tempDayExercises=null;
-document.querySelector('.modal.open').remove();
+// Close the creation modal
+const modals=document.querySelectorAll('.modal.open');
+modals.forEach(m=>{
+if(m.querySelector('#dname'))m.remove();
+});
+// Refresh and reopen template list
 renderTemplates();
 $('tm').classList.add('open');
 }else{
-alert('⚠️ Name und mindestens eine Übung erforderlich!');
+showToast('⚠️ Name und mindestens eine Übung erforderlich!');
 }
 }
 
@@ -813,8 +837,8 @@ if(data.w)w=data.w;
 else if(!data.et&&!data.dts)w=data;
 if(data.et)et=data.et;
 if(data.dts)dts=data.dts;
-s();r();alert('✅ Import erfolgreich!');
-}catch{alert('❌ Fehler beim Import')}
+s();r();showToast('✅ Import erfolgreich!');
+}catch{showToast('❌ Fehler beim Import')}
 };
 r.readAsText(e.target.files[0]);
 };
@@ -853,13 +877,13 @@ localStorage.setItem('ght',t);
 localStorage.setItem('ghu',u);
 localStorage.setItem('ghr',r);
 ghl().then(()=>{r();ghs()});
-alert('✅ Aktiviert');
+showToast('✅ GitHub Sync aktiviert!');
 const modal=document.querySelector('.modal.open');
 if(modal)modal.remove();
 }
 }catch(e){
 console.log('GitHub save error:',e);
-alert('Fehler beim Speichern');
+showToast('❌ Fehler beim Speichern');
 }
 }
 
