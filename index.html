@@ -660,21 +660,35 @@ const m=document.createElement('div');
 m.className='modal open';
 m.id='day-template-modal';
 m.onclick=e=>{if(e.target===m){editingTemplate=null;window.tempDayExercises=null;m.remove()}};
-window.tempDayExercises=editingTemplate!==null&&dts[editingTemplate].exercises?[...dts[editingTemplate].exercises]:[];
+window.tempDayExercises=editingTemplate!==null&&dts[editingTemplate]&&dts[editingTemplate].exercises?[...dts[editingTemplate].exercises]:[];
 let h=`<div class="modal-content">
 <div class="modal-header">
 <h3>${editingTemplate!==null?'Tagesplan bearbeiten':'Neuer Tagesplan'}</h3>
 <button class="close-modal" onclick="editingTemplate=null;window.tempDayExercises=null;this.parentElement.parentElement.parentElement.remove()">×</button>
 </div>
-<div class="form-group"><label class="label">Name</label><input type="text" id="dname" placeholder="z.B. Push Day" value="${editingTemplate!==null?dts[editingTemplate].n:''}" autocomplete="off"></div>
-<div class="form-group"><label class="label">Übungen hinzufügen</label><div id="day-exercises"></div></div>
+<div class="form-group"><label class="label">Name</label><input type="text" id="dname" placeholder="z.B. Push Day" value="${editingTemplate!==null&&dts[editingTemplate]?dts[editingTemplate].n:''}" autocomplete="off"></div>
+<div class="form-group"><label class="label">Übungen</label><div id="day-exercises">`;
+// Initial render of exercises
+if(window.tempDayExercises.length>0){
+window.tempDayExercises.forEach((ex,i)=>{
+h+=`<div class="template-item">
+<div class="template-info">
+<div class="template-name">${ex.n}</div>
+<div class="template-details">${ex.s} Sätze × ${ex.r} • ${ex.m}</div>
+</div>
+<button class="template-btn delete" onclick="removeFromDayTemplate(${i})">×</button>
+</div>`;
+});
+}else{
+h+='<div style="padding:10px;color:#8E8E93;text-align:center">Noch keine Übungen</div>';
+}
+h+=`</div></div>
 <button class="modal-btn purple" onclick="addExerciseToDayTemplate()">➕ Übung hinzufügen</button>
 <button class="modal-btn primary" onclick="saveDayTemplate()">${editingTemplate!==null?'Speichern':'Tagesplan erstellen'}</button>
 <button class="modal-btn secondary" onclick="editingTemplate=null;window.tempDayExercises=null;this.parentElement.parentElement.remove()">Abbrechen</button>
 </div>`;
 m.innerHTML=h;
 document.body.appendChild(m);
-renderDayExercises();
 }
 
 function renderDayExercises(){
@@ -748,9 +762,32 @@ renderDayExercises();
 }
 
 function removeFromDayTemplate(i){
+if(window.tempDayExercises){
 window.tempDayExercises.splice(i,1);
 showToast('❌ Übung entfernt');
-renderDayExercises();
+// Re-render the list directly
+const dayModal=document.getElementById('day-template-modal');
+if(dayModal){
+const container=dayModal.querySelector('#day-exercises');
+if(container){
+let h='';
+if(window.tempDayExercises.length>0){
+window.tempDayExercises.forEach((ex,idx)=>{
+h+=`<div class="template-item">
+<div class="template-info">
+<div class="template-name">${ex.n}</div>
+<div class="template-details">${ex.s} Sätze × ${ex.r} • ${ex.m}</div>
+</div>
+<button class="template-btn delete" onclick="removeFromDayTemplate(${idx})">×</button>
+</div>`;
+});
+}else{
+h='<div style="padding:10px;color:#8E8E93;text-align:center">Noch keine Übungen</div>';
+}
+container.innerHTML=h;
+}
+}
+}
 }
 
 function saveDayTemplate(){
