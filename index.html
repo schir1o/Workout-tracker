@@ -593,130 +593,203 @@ let h=`<div class="modal-content" style="max-height:90vh">
 <button class="close-modal" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
 </div>`;
 
-// Streak and Training Days
+// Streak and Training Days with dates
 h+=`<div class="settings-section">
 <div class="settings-title">Training Übersicht</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-<div style="background:#2c2c2e;padding:16px;border-radius:12px;text-align:center">
+<div style="background:linear-gradient(145deg,#2c2c2e,#323234);padding:16px;border-radius:14px;text-align:center;border:1px solid #3a3a3c">
 <div style="font-size:32px;margin-bottom:4px">🔥 ${stats.streak}</div>
-<div style="font-size:12px;color:#8E8E93">Tage Streak</div>
+<div style="font-size:12px;color:#8E8E93;margin-bottom:4px">Tage Streak</div>
+<div style="font-size:10px;color:#007AFF">${stats.streakStart ? `seit ${new Date(stats.streakStart).toLocaleDateString('de',{day:'2-digit',month:'2-digit'})}` : 'Starte heute!'}</div>
 </div>
-<div style="background:#2c2c2e;padding:16px;border-radius:12px;text-align:center">
+<div style="background:linear-gradient(145deg,#2c2c2e,#323234);padding:16px;border-radius:14px;text-align:center;border:1px solid #3a3a3c">
 <div style="font-size:32px;margin-bottom:4px">${stats.totalDays}</div>
-<div style="font-size:12px;color:#8E8E93">Trainingstage (30T)</div>
+<div style="font-size:12px;color:#8E8E93;margin-bottom:4px">Trainingstage (30T)</div>
+<div style="font-size:10px;color:#34C759">${stats.restDays} Ruhetage</div>
 </div>
 </div>`;
 
-// Calendar Heatmap
-h+=`<div style="background:#2c2c2e;padding:12px;border-radius:12px;margin-bottom:16px">
-<div style="font-size:14px;font-weight:600;margin-bottom:10px">Letzte 4 Wochen</div>
-<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">`;
+// Calendar Heatmap with weekday labels
+h+=`<div style="background:linear-gradient(145deg,#2c2c2e,#323234);padding:14px;border-radius:14px;margin-bottom:16px;border:1px solid #3a3a3c">
+<div style="font-size:14px;font-weight:600;margin-bottom:12px">Letzte 4 Wochen</div>
+<div style="display:grid;grid-template-columns:20px repeat(7,1fr);gap:3px">
+<div></div>`;
+// Weekday headers
+['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(day=>{
+h+=`<div style="text-align:center;font-size:10px;color:#8E8E93">${day}</div>`;
+});
+// Empty cell for alignment
+const startDate=new Date();
+startDate.setDate(startDate.getDate()-27);
+const startDay=(startDate.getDay()+6)%7; // Monday = 0
+for(let e=0;e<startDay;e++){
+if(e===0)h+=`<div style="font-size:10px;color:#8E8E93;display:flex;align-items:center">W1</div>`;
+h+=`<div></div>`;
+}
+// Calendar cells
+let currentWeek=1;
 for(let i=27;i>=0;i--){
 const date=new Date();
 date.setDate(date.getDate()-i);
 const dateStr=date.toISOString().split('T')[0];
 const dayData=w[dateStr];
+const dayOfWeek=(date.getDay()+6)%7;
+if(dayOfWeek===0&&i<27){
+currentWeek++;
+h+=`<div style="font-size:10px;color:#8E8E93;display:flex;align-items:center">W${currentWeek}</div>`;
+}
 let color='#1c1c1e';
 let emoji='';
+let title=date.toLocaleDateString('de',{day:'2-digit',month:'2-digit'});
 if(dayData){
 if(dayData.rest)color='#5E5CE6',emoji='😴';
-else if(dayData.e&&dayData.e.length>0)color='#34C759',emoji='💪';
+else if(dayData.e&&dayData.e.length>0){
+color='#34C759';
+emoji='💪';
+const exerciseCount=dayData.e.length;
+title+=` - ${exerciseCount} Übungen`;
 }
-h+=`<div style="background:${color};aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px">${emoji}</div>`;
+}
+h+=`<div style="background:${color};aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative" title="${title}">${emoji}</div>`;
 }
 h+=`</div>
-<div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:#8E8E93">
-<span>💪 Training</span><span>😴 Ruhetag</span>
+<div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:#8E8E93">
+<span>💪 Training</span><span>😴 Ruhetag</span><span>⬜ Kein Eintrag</span>
 </div>
 </div>`;
 h+=`</div>`;
 
-// Exercise Progress - Enhanced
+// Exercise Progress - Enhanced with 1RM estimates
 if(stats.exercises.length>0){
 h+=`<div class="settings-section">
-<div class="settings-title">Gewichtsentwicklung nach Übung</div>`;
+<div class="settings-title">Gewichtsentwicklung & Bestleistungen</div>`;
 stats.exercises.forEach(ex=>{
 const trend=ex.trend>0?'📈':ex.trend<0?'📉':'➡️';
 const trendColor=ex.trend>0?'#34C759':ex.trend<0?'#FF3B30':'#8E8E93';
 const improvement=ex.improvement>0?`+${ex.improvement.toFixed(1)}kg`:`${ex.improvement.toFixed(1)}kg`;
 const improvementColor=ex.improvement>0?'#34C759':'#FF3B30';
 
-h+=`<div style="background:#2c2c2e;padding:12px;border-radius:10px;margin-bottom:12px">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-<div style="font-weight:600;font-size:16px">${ex.name}</div>
+h+=`<div style="background:linear-gradient(145deg,#2c2c2e,#323234);padding:14px;border-radius:14px;margin-bottom:14px;border:1px solid #3a3a3c">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<div style="font-weight:600;font-size:17px">${ex.name}</div>
 <div style="display:flex;gap:12px;align-items:center">
 <span style="color:${improvementColor};font-weight:600;font-size:14px">${improvement}</span>
 <span style="color:${trendColor};font-size:20px">${trend}</span>
 </div>
 </div>
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-<div style="text-align:center">
-<div style="font-size:11px;color:#8E8E93">Start</div>
-<div style="font-size:15px;font-weight:600">${ex.firstWeight}kg</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+<div style="text-align:center;background:#1c1c1e;padding:8px;border-radius:10px">
+<div style="font-size:10px;color:#8E8E93;margin-bottom:4px">Start</div>
+<div style="font-size:16px;font-weight:700">${ex.firstWeight}kg</div>
 </div>
-<div style="text-align:center">
-<div style="font-size:11px;color:#8E8E93">Aktuell</div>
-<div style="font-size:15px;font-weight:600;color:#007AFF">${ex.lastWeight}kg</div>
+<div style="text-align:center;background:#1c1c1e;padding:8px;border-radius:10px">
+<div style="font-size:10px;color:#8E8E93;margin-bottom:4px">Aktuell</div>
+<div style="font-size:16px;font-weight:700;color:#007AFF">${ex.lastWeight}kg</div>
 </div>
-<div style="text-align:center">
-<div style="font-size:11px;color:#8E8E93">Maximum</div>
-<div style="font-size:15px;font-weight:600;color:#34C759">${ex.maxWeight}kg</div>
+<div style="text-align:center;background:#1c1c1e;padding:8px;border-radius:10px">
+<div style="font-size:10px;color:#8E8E93;margin-bottom:4px">Maximum</div>
+<div style="font-size:16px;font-weight:700;color:#34C759">${ex.maxWeight}kg</div>
+</div>
+<div style="text-align:center;background:#1c1c1e;padding:8px;border-radius:10px">
+<div style="font-size:10px;color:#8E8E93;margin-bottom:4px">1RM (est)</div>
+<div style="font-size:16px;font-weight:700;color:#FF9500">${ex.oneRM}kg</div>
 </div>
 </div>`;
 
+// Personal Records section
+if(ex.records&&ex.records.length>0){
+h+=`<div style="margin-bottom:12px;padding:10px;background:#1c1c1e;border-radius:10px">
+<div style="font-size:12px;color:#8E8E93;margin-bottom:8px;font-weight:600">🏆 PERSÖNLICHE REKORDE</div>`;
+ex.records.forEach(rec=>{
+h+=`<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid #2c2c2e">
+<span style="color:#8E8E93">${rec.reps} Wdh</span>
+<span style="font-weight:600">${rec.weight}kg</span>
+<span style="color:#007AFF;font-size:11px">${new Date(rec.date).toLocaleDateString('de',{day:'2-digit',month:'2-digit',year:'2-digit'})}</span>
+</div>`;
+});
+h+=`</div>`;
+}
+
 // Enhanced Graph
 if(ex.history.length>1){
-h+=`<div style="margin-top:12px;height:100px;position:relative;background:#1c1c1e;border-radius:8px;padding:8px">`;
+h+=`<div style="margin-top:12px;height:120px;position:relative;background:#1c1c1e;border-radius:10px;padding:10px">`;
 const max=Math.max(...ex.history.map(h=>h.weight));
 const min=Math.min(...ex.history.map(h=>h.weight));
 const range=max-min||1;
 
-// Draw grid lines
+// Draw grid lines and labels
 h+=`<svg style="position:absolute;inset:0;width:100%;height:100%">`;
-// Horizontal grid lines
+// Y-axis labels
 for(let i=0;i<=4;i++){
 const y=(i/4)*100;
-h+=`<line x1="0%" y1="${y}%" x2="100%" y2="${y}%" stroke="#3a3a3c" stroke-width="0.5" opacity="0.3"/>`;
+const weight=(max-(i/4)*range).toFixed(0);
+h+=`<line x1="10%" y1="${y}%" x2="90%" y2="${y}%" stroke="#3a3a3c" stroke-width="0.5" opacity="0.3"/>
+<text x="5%" y="${y+2}%" fill="#8E8E93" font-size="9" text-anchor="end">${weight}</text>`;
 }
-// Draw the line graph
+// Draw the line graph with fill
 let pathData='M';
+let fillPath='M10 100';
 ex.history.forEach((point,i)=>{
-const x=(i/(ex.history.length-1))*100;
-const y=100-((point.weight-min)/range)*80-10;
-if(i===0)pathData+=`${x} ${y}`;
-else pathData+=` L${x} ${y}`;
+const x=10+((i/(ex.history.length-1))*80);
+const y=100-((point.weight-min)/range)*90-5;
+if(i===0){
+pathData+=`${x} ${y}`;
+fillPath+=` L${x} ${y}`;
+}else{
+pathData+=` L${x} ${y}`;
+fillPath+=` L${x} ${y}`;
+}
 });
-h+=`<path d="${pathData}" stroke="#007AFF" stroke-width="2" fill="none"/>`;
+fillPath+=` L90 100 Z`;
+h+=`<path d="${fillPath}" fill="url(#gradient${ex.name.replace(/\s/g,'')})" opacity="0.2"/>`;
+h+=`<path d="${pathData}" stroke="#007AFF" stroke-width="2.5" fill="none"/>`;
+// Gradient definition
+h+=`<defs><linearGradient id="gradient${ex.name.replace(/\s/g,'')}" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" style="stop-color:#007AFF;stop-opacity:0.8"/>
+<stop offset="100%" style="stop-color:#007AFF;stop-opacity:0"/>
+</linearGradient></defs>`;
 // Draw points and labels
 ex.history.forEach((point,i)=>{
-const x=(i/(ex.history.length-1))*100;
-const y=100-((point.weight-min)/range)*80-10;
+const x=10+((i/(ex.history.length-1))*80);
+const y=100-((point.weight-min)/range)*90-5;
 const isMax=point.weight===ex.maxWeight;
 const isLast=i===ex.history.length-1;
-h+=`<circle cx="${x}%" cy="${y}%" r="${isMax?'4':'3'}" fill="${isMax?'#34C759':'#007AFF'}"/>`;
-// Show weight value for first, last and max
-if(i===0||isLast||isMax){
-h+=`<text x="${x}%" y="${y-5}%" text-anchor="middle" fill="#8E8E93" font-size="9">${point.weight}</text>`;
+h+=`<circle cx="${x}%" cy="${y}%" r="${isMax?'5':'4'}" fill="${isMax?'#34C759':'#007AFF'}" stroke="#1c1c1e" stroke-width="2"/>`;
+// Show weight value for max
+if(isMax){
+h+=`<text x="${x}%" y="${y-8}%" text-anchor="middle" fill="#34C759" font-size="10" font-weight="600">${point.weight}kg</text>`;
 }
 });
 h+=`</svg>`;
 // Date labels
-h+=`<div style="display:flex;justify-content:space-between;margin-top:85px;font-size:9px;color:#8E8E93">
+h+=`<div style="display:flex;justify-content:space-between;margin-top:105px;font-size:9px;color:#8E8E93;padding:0 10%">
 <span>${new Date(ex.history[0].date).toLocaleDateString('de',{day:'2-digit',month:'2-digit'})}</span>
+<span>${new Date(ex.history[Math.floor(ex.history.length/2)].date).toLocaleDateString('de',{day:'2-digit',month:'2-digit'})}</span>
 <span>${new Date(ex.history[ex.history.length-1].date).toLocaleDateString('de',{day:'2-digit',month:'2-digit'})}</span>
 </div>`;
 h+=`</div>`;
 
-// Training frequency
+// Training frequency and volume
 const daysBetween=Math.floor((new Date(ex.history[ex.history.length-1].date)-new Date(ex.history[0].date))/(1000*60*60*24));
 const frequency=daysBetween>0?(ex.history.length/daysBetween*7).toFixed(1):0;
-h+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid #3a3a3c;display:flex;justify-content:space-between;font-size:12px;color:#8E8E93">
-<span>📅 ${ex.history.length} Trainings</span>
-<span>⌀ ${frequency}x pro Woche</span>
-<span>📈 ${((ex.improvement/ex.firstWeight)*100).toFixed(0)}% Steigerung</span>
+const totalVolume=ex.totalVolume||0;
+const avgVolume=ex.avgVolume||0;
+h+=`<div style="margin-top:12px;padding-top:12px;border-top:1px solid #3a3a3c;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px">
+<div style="text-align:center">
+<div style="color:#8E8E93">Frequenz</div>
+<div style="font-weight:600">⌀ ${frequency}x/Woche</div>
+</div>
+<div style="text-align:center">
+<div style="color:#8E8E93">Steigerung</div>
+<div style="font-weight:600;color:${improvementColor}">${((ex.improvement/ex.firstWeight)*100).toFixed(0)}%</div>
+</div>
+<div style="text-align:center">
+<div style="color:#8E8E93">Trainings</div>
+<div style="font-weight:600">${ex.history.length}x</div>
+</div>
 </div>`;
 }else{
-h+=`<div style="padding:20px;text-align:center;color:#8E8E93;font-size:13px">Noch nicht genug Daten für Graph</div>`;
+h+=`<div style="padding:20px;text-align:center;color:#8E8E93;font-size:13px;background:#1c1c1e;border-radius:10px">Noch nicht genug Daten für Graph</div>`;
 }
 h+=`</div>`;
 });
@@ -737,12 +810,15 @@ document.body.appendChild(m);
 function calculateStats(){
 const stats={
 streak:0,
+streakStart:null,
 totalDays:0,
+restDays:0,
 exercises:[]
 };
 
-// Calculate streak
+// Calculate streak with start date
 let streak=0;
+let streakStart=null;
 const today=new Date();
 for(let i=0;i<365;i++){
 const date=new Date(today);
@@ -750,8 +826,10 @@ date.setDate(date.getDate()-i);
 const dateStr=date.toISOString().split('T')[0];
 const dayData=w[dateStr];
 if(dayData&&(dayData.rest||(dayData.e&&dayData.e.length>0))){
-if(i===streak)streak++;
-else if(streak>0)break;
+if(i===streak){
+streak++;
+streakStart=dateStr;
+}else if(streak>0)break;
 }else if(i===0){
 // Today is empty, check yesterday
 }else if(streak>0){
@@ -759,26 +837,51 @@ break;
 }
 }
 stats.streak=streak;
+stats.streakStart=streakStart;
 
-// Count training days in last 30 days
+// Count training and rest days in last 30 days
 for(let i=0;i<30;i++){
 const date=new Date();
 date.setDate(date.getDate()-i);
 const dateStr=date.toISOString().split('T')[0];
-if(w[dateStr]&&w[dateStr].e&&w[dateStr].e.length>0){
+if(w[dateStr]){
+if(w[dateStr].e&&w[dateStr].e.length>0){
 stats.totalDays++;
+}else if(w[dateStr].rest){
+stats.restDays++;
+}
 }
 }
 
-// Exercise progress with enhanced tracking
+// Exercise progress with enhanced tracking and 1RM calculation
 const exerciseMap={};
 Object.keys(w).forEach(date=>{
 if(w[date]&&w[date].e){
 w[date].e.forEach(ex=>{
-if(!exerciseMap[ex.n])exerciseMap[ex.n]={history:[],name:ex.n};
+if(!exerciseMap[ex.n])exerciseMap[ex.n]={history:[],records:[],name:ex.n};
+// Find max weight for this exercise on this date
 const maxWeight=Math.max(...ex.s.map(s=>parseFloat(s.w)||0));
 if(maxWeight>0){
 exerciseMap[ex.n].history.push({date,weight:maxWeight});
+// Track personal records by rep range
+ex.s.forEach(set=>{
+if(set.w&&set.r){
+const weight=parseFloat(set.w);
+const reps=parseInt(set.r);
+if(weight>0&&reps>0){
+// Check if this is a PR for this rep range
+const existing=exerciseMap[ex.n].records.find(r=>r.reps===reps);
+if(!existing||existing.weight<weight){
+if(existing){
+existing.weight=weight;
+existing.date=date;
+}else{
+exerciseMap[ex.n].records.push({reps,weight,date});
+}
+}
+}
+}
+});
 }
 });
 }
@@ -792,6 +895,23 @@ ex.lastWeight=ex.history[ex.history.length-1].weight;
 ex.maxWeight=Math.max(...ex.history.map(h=>h.weight));
 ex.improvement=ex.lastWeight-ex.firstWeight;
 
+// Calculate estimated 1RM using Epley formula
+// 1RM = weight × (1 + reps/30)
+let estimated1RM=ex.maxWeight; // Default to max weight
+ex.records.forEach(rec=>{
+if(rec.reps<=12){ // Only use lower rep ranges for accuracy
+const rm=rec.weight*(1+rec.reps/30);
+if(rm>estimated1RM)estimated1RM=rm;
+}
+});
+ex.oneRM=Math.round(estimated1RM);
+
+// Sort records by reps
+ex.records.sort((a,b)=>a.reps-b.reps);
+// Keep only best 5 records
+ex.records=ex.records.slice(0,5);
+
+// Calculate trend
 if(ex.history.length>1){
 const recent=ex.history.slice(-3);
 const older=ex.history.slice(-6,-3);
