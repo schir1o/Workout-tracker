@@ -161,21 +161,22 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 <div class="modal" id="am">
 <div class="modal-content">
 <div class="modal-header">
-<h3>Übung hinzufügen</h3>
+<h3>Hinzufügen</h3>
 <button class="close-modal" onclick="cm('am')">×</button>
 </div>
 <div class="choice-grid">
 <div class="choice-card" onclick="showManualAdd()">
 <div class="choice-icon">✏️</div>
-<div class="choice-title">Manuell</div>
-<div class="choice-desc">Neue Übung erstellen</div>
+<div class="choice-title">Neue Übung</div>
+<div class="choice-desc">Manuell erstellen</div>
 </div>
 <div class="choice-card" onclick="showTemplateSelect()">
-<div class="choice-icon">📋</div>
-<div class="choice-title">Template</div>
+<div class="choice-icon">💪</div>
+<div class="choice-title">Übungs-Template</div>
 <div class="choice-desc">Aus Vorlage wählen</div>
 </div>
 </div>
+<div id="day-template-option"></div>
 </div>
 </div>
 
@@ -380,7 +381,7 @@ h+=`<div class="set ${s.d?'done':''}">
 h+=`</div>`;
 });
 }
-h+=`<button class="add-btn" onclick="$('am').classList.add('open')">➕ Neue Übung</button>`;
+h+=`<button class="add-btn" onclick="openAddModal()">➕ Neue Übung</button>`;
 if((!d||!d.e||d.e.length===0)&&dts.length>0){
 h+=`<button class="add-btn template-btn" onclick="showDayTemplates()">📋 Tagesplan laden</button>`;
 }
@@ -441,6 +442,24 @@ s();r();
 }
 }
 
+// Open Add Modal with day template option if available
+function openAddModal(){
+// Check if day templates exist and add them to the modal
+const dayOption = $('day-template-option');
+if(dts.length>0){
+let h='<div style="margin-top:10px"><div style="font-size:12px;color:#8E8E93;margin-bottom:8px;text-align:center">ODER</div>';
+h+='<div class="choice-card" onclick="showDayTemplates()" style="width:100%">';
+h+='<div class="choice-icon">📅</div>';
+h+='<div class="choice-title">Tagesplan laden</div>';
+h+='<div class="choice-desc">Kompletten Trainingsplan</div>';
+h+='</div></div>';
+dayOption.innerHTML=h;
+}else{
+dayOption.innerHTML='';
+}
+$('am').classList.add('open');
+}
+
 // Template Functions
 function showManualAdd(){
 cm('am');
@@ -489,6 +508,7 @@ cm('tsm');s();r();
 }
 
 function showDayTemplates(){
+cm('am'); // Close the add modal if open
 let h='<div class="modal open" onclick="if(event.target===this)this.remove()"><div class="modal-content">';
 h+='<div class="modal-header"><h3>Tagesplan wählen</h3><button class="close-modal" onclick="this.parentElement.parentElement.parentElement.remove()">×</button></div>';
 if(dts.length===0){
