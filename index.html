@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
@@ -225,7 +226,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml;charset=UTF-8,%3c
 </div>
 
 <!-- Template Select Modal -->
-<div class="modal" id="tsm" onclick="if(event.target.id=='tsm')cm('tsm')">
+<div class="modal" id="tsm">
 <div class="modal-content">
 <div class="modal-header">
 <h3>Template wählen</h3>
@@ -677,6 +678,8 @@ renderDayExercises();
 }
 
 function renderDayExercises(){
+const container=$('day-exercises');
+if(!container)return; // Safety check if element doesn't exist
 let h='';
 if(window.tempDayExercises&&window.tempDayExercises.length>0){
 window.tempDayExercises.forEach((ex,i)=>{
@@ -691,7 +694,7 @@ h+=`<div class="template-item">
 }else{
 h='<div style="padding:10px;color:#8E8E93;text-align:center">Noch keine Übungen</div>';
 }
-$('day-exercises').innerHTML=h;
+container.innerHTML=h;
 }
 
 function addExerciseToDayTemplate(){
@@ -731,10 +734,17 @@ function selectForDayTemplate(i){
 if(!window.tempDayExercises)window.tempDayExercises=[];
 window.tempDayExercises.push({...et[i]});
 showToast('✅ Übung hinzugefügt');
-document.querySelector('.modal.open').remove();
+// Close the selection modal
+const selectionModal=document.querySelector('.modal.open');
+if(selectionModal&&!selectionModal.querySelector('#day-exercises')){
+selectionModal.remove();
+}
+// Show the day template modal again
 const parent=document.getElementById('day-template-modal');
-if(parent)parent.style.display='flex';
+if(parent){
+parent.style.display='flex';
 renderDayExercises();
+}
 }
 
 function removeFromDayTemplate(i){
