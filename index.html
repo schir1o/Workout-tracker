@@ -322,7 +322,17 @@ $('sm').classList.add('open');
 function updateGithubStatus(){
 const status = $('github-status');
 if(status && localStorage.getItem('ght')){
+const lastSync = localStorage.getItem('gls');
+if(lastSync){
+const date = new Date(lastSync);
+const time = date.toLocaleTimeString('de', {hour: '2-digit', minute: '2-digit'});
+const day = date.toLocaleDateString('de', {day: '2-digit', month: '2-digit'});
+status.innerHTML = `✅ Aktiv • Sync: ${day} ${time}`;
+} else {
 status.textContent = '✅ Aktiviert';
+}
+} else {
+status.textContent = 'Automatische Synchronisation einrichten';
 }
 }
 
@@ -410,6 +420,8 @@ method:'PUT',
 headers:{'Authorization':`token ${t}`},
 body:JSON.stringify({message:`Update ${new Date().toLocaleString('de')}`,content:d,sha:s})
 });
+localStorage.setItem('gls', new Date().toISOString());
+updateGithubStatus();
 }catch(e){console.log('GitHub save error:',e)}
 }
 
@@ -436,6 +448,8 @@ const c=JSON.parse(decodeURIComponent(escape(atob(d.content))));
 if(c.w){
 w=c.w;
 localStorage.setItem('w',JSON.stringify(w));
+localStorage.setItem('gls', new Date().toISOString());
+updateGithubStatus();
 console.log('✅ Von GitHub geladen');
 }
 }else if(res.status===404){
