@@ -625,44 +625,101 @@ h+=`</div>
 </div>`;
 h+=`</div>`;
 
-// Exercise Progress
+// Exercise Progress - Enhanced
 if(stats.exercises.length>0){
 h+=`<div class="settings-section">
-<div class="settings-title">Fortschritt nach Übung</div>`;
+<div class="settings-title">Gewichtsentwicklung nach Übung</div>`;
 stats.exercises.forEach(ex=>{
 const trend=ex.trend>0?'📈':ex.trend<0?'📉':'➡️';
 const trendColor=ex.trend>0?'#34C759':ex.trend<0?'#FF3B30':'#8E8E93';
-h+=`<div style="background:#2c2c2e;padding:12px;border-radius:10px;margin-bottom:8px">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-<div style="font-weight:600">${ex.name}</div>
-<div style="color:${trendColor}">${trend}</div>
+const improvement=ex.improvement>0?`+${ex.improvement.toFixed(1)}kg`:`${ex.improvement.toFixed(1)}kg`;
+const improvementColor=ex.improvement>0?'#34C759':'#FF3B30';
+
+h+=`<div style="background:#2c2c2e;padding:12px;border-radius:10px;margin-bottom:12px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+<div style="font-weight:600;font-size:16px">${ex.name}</div>
+<div style="display:flex;gap:12px;align-items:center">
+<span style="color:${improvementColor};font-weight:600;font-size:14px">${improvement}</span>
+<span style="color:${trendColor};font-size:20px">${trend}</span>
 </div>
-<div style="display:flex;justify-content:space-between;font-size:13px;color:#8E8E93">
-<span>Letztes: ${ex.lastWeight}kg</span>
-<span>Best: ${ex.maxWeight}kg</span>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+<div style="text-align:center">
+<div style="font-size:11px;color:#8E8E93">Start</div>
+<div style="font-size:15px;font-weight:600">${ex.firstWeight}kg</div>
+</div>
+<div style="text-align:center">
+<div style="font-size:11px;color:#8E8E93">Aktuell</div>
+<div style="font-size:15px;font-weight:600;color:#007AFF">${ex.lastWeight}kg</div>
+</div>
+<div style="text-align:center">
+<div style="font-size:11px;color:#8E8E93">Maximum</div>
+<div style="font-size:15px;font-weight:600;color:#34C759">${ex.maxWeight}kg</div>
+</div>
 </div>`;
+
+// Enhanced Graph
 if(ex.history.length>1){
-h+=`<div style="margin-top:8px;height:60px;position:relative">`;
+h+=`<div style="margin-top:12px;height:100px;position:relative;background:#1c1c1e;border-radius:8px;padding:8px">`;
 const max=Math.max(...ex.history.map(h=>h.weight));
 const min=Math.min(...ex.history.map(h=>h.weight));
 const range=max-min||1;
+
+// Draw grid lines
+h+=`<svg style="position:absolute;inset:0;width:100%;height:100%">`;
+// Horizontal grid lines
+for(let i=0;i<=4;i++){
+const y=(i/4)*100;
+h+=`<line x1="0%" y1="${y}%" x2="100%" y2="${y}%" stroke="#3a3a3c" stroke-width="0.5" opacity="0.3"/>`;
+}
+// Draw the line graph
+let pathData='M';
 ex.history.forEach((point,i)=>{
 const x=(i/(ex.history.length-1))*100;
-const y=100-((point.weight-min)/range)*100;
-if(i>0){
-const prevX=((i-1)/(ex.history.length-1))*100;
-const prevY=100-((ex.history[i-1].weight-min)/range)*100;
-h+=`<svg style="position:absolute;inset:0;width:100%;height:100%">
-<line x1="${prevX}%" y1="${prevY}%" x2="${x}%" y2="${y}%" stroke="#007AFF" stroke-width="2"/>
-<circle cx="${x}%" cy="${y}%" r="3" fill="#007AFF"/>
-</svg>`;
+const y=100-((point.weight-min)/range)*80-10;
+if(i===0)pathData+=`${x} ${y}`;
+else pathData+=` L${x} ${y}`;
+});
+h+=`<path d="${pathData}" stroke="#007AFF" stroke-width="2" fill="none"/>`;
+// Draw points and labels
+ex.history.forEach((point,i)=>{
+const x=(i/(ex.history.length-1))*100;
+const y=100-((point.weight-min)/range)*80-10;
+const isMax=point.weight===ex.maxWeight;
+const isLast=i===ex.history.length-1;
+h+=`<circle cx="${x}%" cy="${y}%" r="${isMax?'4':'3'}" fill="${isMax?'#34C759':'#007AFF'}"/>`;
+// Show weight value for first, last and max
+if(i===0||isLast||isMax){
+h+=`<text x="${x}%" y="${y-5}%" text-anchor="middle" fill="#8E8E93" font-size="9">${point.weight}</text>`;
 }
 });
+h+=`</svg>`;
+// Date labels
+h+=`<div style="display:flex;justify-content:space-between;margin-top:85px;font-size:9px;color:#8E8E93">
+<span>${new Date(ex.history[0].date).toLocaleDateString('de',{day:'2-digit',month:'2-digit'})}</span>
+<span>${new Date(ex.history[ex.history.length-1].date).toLocaleDateString('de',{day:'2-digit',month:'2-digit'})}</span>
+</div>`;
 h+=`</div>`;
+
+// Training frequency
+const daysBetween=Math.floor((new Date(ex.history[ex.history.length-1].date)-new Date(ex.history[0].date))/(1000*60*60*24));
+const frequency=daysBetween>0?(ex.history.length/daysBetween*7).toFixed(1):0;
+h+=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid #3a3a3c;display:flex;justify-content:space-between;font-size:12px;color:#8E8E93">
+<span>📅 ${ex.history.length} Trainings</span>
+<span>⌀ ${frequency}x pro Woche</span>
+<span>📈 ${((ex.improvement/ex.firstWeight)*100).toFixed(0)}% Steigerung</span>
+</div>`;
+}else{
+h+=`<div style="padding:20px;text-align:center;color:#8E8E93;font-size:13px">Noch nicht genug Daten für Graph</div>`;
 }
 h+=`</div>`;
 });
 h+=`</div>`;
+}else{
+h+=`<div class="empty">
+<div class="empty-text">Noch keine Trainingsdaten</div>
+<small>Starte dein Training um Fortschritt zu sehen</small>
+</div>`;
 }
 
 h+=`<button class="modal-btn secondary" onclick="this.parentElement.parentElement.remove()">Schließen</button>
@@ -707,7 +764,7 @@ stats.totalDays++;
 }
 }
 
-// Exercise progress
+// Exercise progress with enhanced tracking
 const exerciseMap={};
 Object.keys(w).forEach(date=>{
 if(w[date]&&w[date].e){
@@ -724,8 +781,11 @@ exerciseMap[ex.n].history.push({date,weight:maxWeight});
 Object.values(exerciseMap).forEach(ex=>{
 if(ex.history.length>0){
 ex.history.sort((a,b)=>a.date.localeCompare(b.date));
+ex.firstWeight=ex.history[0].weight;
 ex.lastWeight=ex.history[ex.history.length-1].weight;
 ex.maxWeight=Math.max(...ex.history.map(h=>h.weight));
+ex.improvement=ex.lastWeight-ex.firstWeight;
+
 if(ex.history.length>1){
 const recent=ex.history.slice(-3);
 const older=ex.history.slice(-6,-3);
@@ -734,7 +794,7 @@ const recentAvg=recent.reduce((a,b)=>a+b.weight,0)/recent.length;
 const olderAvg=older.reduce((a,b)=>a+b.weight,0)/older.length;
 ex.trend=recentAvg>olderAvg?1:recentAvg<olderAvg?-1:0;
 }else{
-ex.trend=0;
+ex.trend=ex.lastWeight>ex.firstWeight?1:ex.lastWeight<ex.firstWeight?-1:0;
 }
 }else{
 ex.trend=0;
@@ -742,6 +802,9 @@ ex.trend=0;
 stats.exercises.push(ex);
 }
 });
+
+// Sort exercises by most recent training
+stats.exercises.sort((a,b)=>b.history[b.history.length-1].date.localeCompare(a.history[a.history.length-1].date));
 
 return stats;
 }
