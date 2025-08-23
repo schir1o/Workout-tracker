@@ -657,22 +657,22 @@ function openAddDayTemplate(){
 cm('tm');
 const m=document.createElement('div');
 m.className='modal open';
-m.onclick=e=>{if(e.target===m)m.remove()};
-let exercises=editingTemplate!==null&&dts[editingTemplate].exercises?[...dts[editingTemplate].exercises]:[];
+m.id='day-template-modal';
+m.onclick=e=>{if(e.target===m){editingTemplate=null;window.tempDayExercises=null;m.remove()}};
+window.tempDayExercises=editingTemplate!==null&&dts[editingTemplate].exercises?[...dts[editingTemplate].exercises]:[];
 let h=`<div class="modal-content">
 <div class="modal-header">
 <h3>${editingTemplate!==null?'Tagesplan bearbeiten':'Neuer Tagesplan'}</h3>
-<button class="close-modal" onclick="editingTemplate=null;this.parentElement.parentElement.parentElement.remove()">×</button>
+<button class="close-modal" onclick="editingTemplate=null;window.tempDayExercises=null;this.parentElement.parentElement.parentElement.remove()">×</button>
 </div>
 <div class="form-group"><label class="label">Name</label><input type="text" id="dname" placeholder="z.B. Push Day" value="${editingTemplate!==null?dts[editingTemplate].n:''}" autocomplete="off"></div>
 <div class="form-group"><label class="label">Übungen hinzufügen</label><div id="day-exercises"></div></div>
 <button class="modal-btn purple" onclick="addExerciseToDayTemplate()">➕ Übung hinzufügen</button>
 <button class="modal-btn primary" onclick="saveDayTemplate()">${editingTemplate!==null?'Speichern':'Tagesplan erstellen'}</button>
-<button class="modal-btn secondary" onclick="editingTemplate=null;this.parentElement.parentElement.remove()">Abbrechen</button>
+<button class="modal-btn secondary" onclick="editingTemplate=null;window.tempDayExercises=null;this.parentElement.parentElement.remove()">Abbrechen</button>
 </div>`;
 m.innerHTML=h;
 document.body.appendChild(m);
-window.tempDayExercises=exercises;
 renderDayExercises();
 }
 
@@ -695,15 +695,15 @@ $('day-exercises').innerHTML=h;
 }
 
 function addExerciseToDayTemplate(){
-const parent=document.querySelector('.modal.open');
-parent.style.display='none';
+const parent=document.getElementById('day-template-modal');
+if(parent)parent.style.display='none';
 const m=document.createElement('div');
 m.className='modal open';
-m.onclick=e=>{if(e.target===m){m.remove();parent.style.display='flex';}};
+m.onclick=e=>{if(e.target===m){m.remove();if(parent)parent.style.display='flex';}};
 let h=`<div class="modal-content">
 <div class="modal-header">
 <h3>Übung auswählen</h3>
-<button class="close-modal" onclick="this.parentElement.parentElement.parentElement.remove();document.querySelectorAll('.modal')[document.querySelectorAll('.modal').length-2].style.display='flex'">×</button>
+<button class="close-modal" onclick="this.parentElement.parentElement.parentElement.remove();const p=document.getElementById('day-template-modal');if(p)p.style.display='flex'">×</button>
 </div>`;
 if(et.length>0){
 h+='<div class="template-list">';
@@ -719,8 +719,9 @@ h+=`<div class="template-item">
 });
 h+='</div>';
 }else{
-h+='<div class="empty"><div class="empty-text">Keine Übungs-Templates vorhanden</div></div>';
+h+='<div class="empty"><div class="empty-text">Keine Übungs-Templates vorhanden</div><small>Erstelle zuerst Übungs-Templates</small></div>';
 }
+h+='<button class="modal-btn secondary" onclick="this.parentElement.parentElement.remove();const p=document.getElementById(\'day-template-modal\');if(p)p.style.display=\'flex\'">Abbrechen</button>';
 h+='</div>';
 m.innerHTML=h;
 document.body.appendChild(m);
@@ -729,13 +730,16 @@ document.body.appendChild(m);
 function selectForDayTemplate(i){
 if(!window.tempDayExercises)window.tempDayExercises=[];
 window.tempDayExercises.push({...et[i]});
+showToast('✅ Übung hinzugefügt');
 document.querySelector('.modal.open').remove();
-document.querySelector('.modal').style.display='flex';
+const parent=document.getElementById('day-template-modal');
+if(parent)parent.style.display='flex';
 renderDayExercises();
 }
 
 function removeFromDayTemplate(i){
 window.tempDayExercises.splice(i,1);
+showToast('❌ Übung entfernt');
 renderDayExercises();
 }
 
@@ -743,20 +747,18 @@ function saveDayTemplate(){
 const n=$('dname').value.trim();
 if(n&&window.tempDayExercises&&window.tempDayExercises.length>0){
 if(editingTemplate!==null){
-dts[editingTemplate]={n,exercises:window.tempDayExercises};
+dts[editingTemplate]={n,exercises:[...window.tempDayExercises]};
 editingTemplate=null;
 showToast('✅ Tagesplan aktualisiert!');
 }else{
-dts.push({n,exercises:window.tempDayExercises});
+dts.push({n,exercises:[...window.tempDayExercises]});
 showToast('✅ Tagesplan erstellt!');
 }
-s();
+s();  // Save to localStorage and GitHub
 window.tempDayExercises=null;
 // Close the creation modal
-const modals=document.querySelectorAll('.modal.open');
-modals.forEach(m=>{
-if(m.querySelector('#dname'))m.remove();
-});
+const dayModal=document.getElementById('day-template-modal');
+if(dayModal)dayModal.remove();
 // Refresh and reopen template list
 renderTemplates();
 $('tm').classList.add('open');
