@@ -3,1420 +3,874 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1a1a2e">
-    <title>Mein Tagebuch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schwarzes Loch - Planeten Simulation</title>
     <style>
-        :root {
-            --primary: #6c5ce7;
-            --primary-light: #a29bfe;
-            --secondary: #00cec9;
-            --bg-dark: #1a1a2e;
-            --bg-card: #16213e;
-            --bg-input: #0f3460;
-            --text-primary: #ffffff;
-            --text-secondary: #b2bec3;
-            --accent-happy: #00b894;
-            --accent-neutral: #fdcb6e;
-            --accent-sad: #74b9ff;
-            --accent-angry: #e17055;
-            --accent-love: #fd79a8;
-            --shadow: 0 4px 20px rgba(0,0,0,0.3);
-            --radius: 16px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #05050a; color: #e8e8ed; overflow: hidden; }
 
 ```
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-        background: var(--bg-dark);
-        color: var(--text-primary);
-        min-height: 100vh;
-        min-height: 100dvh;
-        overflow-x: hidden;
-    }
-
-    /* Header */
-    .header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        padding: 16px 20px;
-        background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-card) 100%);
-        backdrop-filter: blur(10px);
-        z-index: 100;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .header h1 {
-        font-size: 1.4rem;
-        font-weight: 600;
-        background: linear-gradient(135deg, var(--primary-light), var(--secondary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .header-actions {
-        display: flex;
-        gap: 12px;
-    }
-
-    .icon-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        border: none;
-        background: var(--bg-input);
-        color: var(--text-primary);
-        font-size: 1.2rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-    }
-
-    .icon-btn:hover, .icon-btn:active {
-        background: var(--primary);
-        transform: scale(1.05);
-    }
-
-    /* Main Content */
-    .main {
-        padding: 80px 16px 100px;
-    }
-
-    /* Stats Bar */
-    .stats-bar {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-bottom: 24px;
-    }
-
-    .stat-card {
-        background: var(--bg-card);
-        padding: 16px;
-        border-radius: var(--radius);
-        text-align: center;
-    }
-
-    .stat-value {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--primary-light);
-    }
-
-    .stat-label {
-        font-size: 0.75rem;
-        color: var(--text-secondary);
-        margin-top: 4px;
-    }
-
-    /* Entry Cards */
-    .entries-container {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-
-    .entry-card {
-        background: var(--bg-card);
-        border-radius: var(--radius);
-        padding: 20px;
-        box-shadow: var(--shadow);
-        transition: transform 0.2s;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .entry-card::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 4px;
-    }
-
-    .entry-card.mood-happy::before { background: var(--accent-happy); }
-    .entry-card.mood-neutral::before { background: var(--accent-neutral); }
-    .entry-card.mood-sad::before { background: var(--accent-sad); }
-    .entry-card.mood-angry::before { background: var(--accent-angry); }
-    .entry-card.mood-love::before { background: var(--accent-love); }
-
-    .entry-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 12px;
-    }
-
-    .entry-date {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-    }
-
-    .entry-mood {
-        font-size: 1.5rem;
-    }
-
-    .entry-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-
-    .entry-preview {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        line-height: 1.5;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .entry-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 12px;
-    }
-
-    .tag {
-        padding: 4px 12px;
-        background: var(--bg-input);
-        border-radius: 20px;
-        font-size: 0.75rem;
-        color: var(--primary-light);
-    }
-
-    .entry-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 16px;
-        padding-top: 12px;
-        border-top: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .entry-actions button {
-        flex: 1;
-        padding: 10px;
-        border: none;
-        border-radius: 10px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .btn-edit {
-        background: var(--bg-input);
-        color: var(--text-primary);
-    }
-
-    .btn-delete {
-        background: rgba(231, 76, 60, 0.2);
-        color: #e74c3c;
-    }
-
-    /* FAB Button */
-    .fab {
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        border: none;
-        color: white;
-        font-size: 2rem;
-        cursor: pointer;
-        box-shadow: 0 4px 20px rgba(108, 92, 231, 0.5);
-        z-index: 99;
-        transition: all 0.3s;
-    }
-
-    .fab:hover, .fab:active {
-        transform: scale(1.1) rotate(90deg);
-    }
-
-    /* Modal */
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.8);
-        z-index: 200;
-        display: none;
-        align-items: flex-end;
-        justify-content: center;
-    }
-
-    .modal-overlay.active {
-        display: flex;
-    }
-
-    .modal {
-        background: var(--bg-card);
-        width: 100%;
-        max-width: 500px;
-        max-height: 90vh;
-        border-radius: 24px 24px 0 0;
-        padding: 24px;
-        overflow-y: auto;
-        animation: slideUp 0.3s ease;
-    }
-
-    @keyframes slideUp {
-        from { transform: translateY(100%); }
-        to { transform: translateY(0); }
-    }
-
-    .modal-handle {
-        width: 40px;
-        height: 4px;
-        background: var(--text-secondary);
-        border-radius: 2px;
-        margin: 0 auto 20px;
-    }
-
-    .modal-title {
-        font-size: 1.3rem;
-        font-weight: 600;
-        margin-bottom: 24px;
-        text-align: center;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-label {
-        display: block;
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        margin-bottom: 8px;
-    }
-
-    .form-input {
-        width: 100%;
-        padding: 14px 16px;
-        background: var(--bg-input);
-        border: 2px solid transparent;
-        border-radius: 12px;
-        color: var(--text-primary);
-        font-size: 1rem;
-        transition: border-color 0.2s;
-    }
-
-    .form-input:focus {
-        outline: none;
-        border-color: var(--primary);
-    }
-
-    textarea.form-input {
-        min-height: 150px;
-        resize: vertical;
-        font-family: inherit;
-        line-height: 1.6;
-    }
-
-    /* Mood Selector */
-    .mood-selector {
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-    }
-
-    .mood-option {
-        flex: 1;
-        padding: 12px 8px;
-        background: var(--bg-input);
-        border: 2px solid transparent;
-        border-radius: 12px;
-        font-size: 1.5rem;
-        cursor: pointer;
-        text-align: center;
-        transition: all 0.2s;
-    }
-
-    .mood-option:hover {
-        transform: scale(1.1);
-    }
-
-    .mood-option.selected {
-        border-color: var(--primary);
-        background: rgba(108, 92, 231, 0.2);
-    }
-
-    .mood-option span {
-        display: block;
-        font-size: 0.65rem;
-        color: var(--text-secondary);
-        margin-top: 4px;
-    }
-
-    /* Tags Input */
-    .tags-input-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 12px;
-        background: var(--bg-input);
-        border-radius: 12px;
-        min-height: 50px;
-    }
-
-    .tags-input-container .tag {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .tag-remove {
-        cursor: pointer;
-        opacity: 0.7;
-    }
-
-    .tags-input {
-        flex: 1;
-        min-width: 100px;
-        background: transparent;
-        border: none;
-        color: var(--text-primary);
-        font-size: 0.9rem;
-        outline: none;
-    }
-
-    /* Save Button */
-    .btn-save {
-        width: 100%;
-        padding: 16px;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        border: none;
-        border-radius: 12px;
-        color: white;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        margin-top: 8px;
-        transition: all 0.2s;
-    }
-
-    .btn-save:hover, .btn-save:active {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
-    }
-
-    /* Search & Filter Modal */
-    .search-container {
-        padding: 16px;
-        background: var(--bg-card);
-        border-radius: var(--radius);
-        margin-bottom: 20px;
-    }
-
-    .search-input {
-        width: 100%;
-        padding: 14px 16px 14px 44px;
-        background: var(--bg-input);
-        border: none;
-        border-radius: 12px;
-        color: var(--text-primary);
-        font-size: 1rem;
-    }
-
-    .search-wrapper {
-        position: relative;
-    }
-
-    .search-wrapper::before {
-        content: '🔍';
-        position: absolute;
-        left: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 1.1rem;
-    }
-
-    .filter-chips {
-        display: flex;
-        gap: 8px;
-        margin-top: 12px;
-        overflow-x: auto;
-        padding-bottom: 4px;
-    }
-
-    .filter-chip {
-        padding: 8px 16px;
-        background: var(--bg-input);
-        border: none;
-        border-radius: 20px;
-        color: var(--text-secondary);
-        font-size: 0.85rem;
-        white-space: nowrap;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .filter-chip.active {
-        background: var(--primary);
-        color: white;
-    }
-
-    /* View Entry Modal */
-    .view-modal .entry-full-content {
-        line-height: 1.8;
-        white-space: pre-wrap;
-        color: var(--text-primary);
-    }
-
-    .view-modal .entry-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-    }
-
-    .empty-state-icon {
-        font-size: 4rem;
-        margin-bottom: 16px;
-    }
-
-    .empty-state h2 {
-        font-size: 1.2rem;
-        margin-bottom: 8px;
-    }
-
-    .empty-state p {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-    }
-
-    /* Calendar View */
-    .calendar-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 4px;
-        margin-bottom: 20px;
-    }
-
-    .calendar-header {
-        text-align: center;
-        font-size: 0.75rem;
-        color: var(--text-secondary);
-        padding: 8px 0;
-    }
-
-    .calendar-day {
-        aspect-ratio: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        background: var(--bg-input);
-        cursor: pointer;
-        position: relative;
-    }
-
-    .calendar-day.has-entry {
-        background: var(--primary);
-    }
-
-    .calendar-day.today {
-        border: 2px solid var(--secondary);
-    }
-
-    .calendar-day.other-month {
-        opacity: 0.3;
-    }
-
-    .calendar-nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-    }
-
-    .calendar-nav h3 {
-        font-size: 1.1rem;
-    }
-
-    .calendar-nav button {
-        padding: 8px 16px;
-        background: var(--bg-input);
-        border: none;
-        border-radius: 8px;
-        color: var(--text-primary);
-        cursor: pointer;
-    }
-
-    /* Export Modal */
-    .export-options {
-        display: grid;
-        gap: 12px;
-    }
-
-    .export-btn {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 16px;
-        background: var(--bg-input);
-        border: none;
-        border-radius: 12px;
-        color: var(--text-primary);
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .export-btn:hover {
-        background: var(--primary);
-    }
-
-    .export-btn span.icon {
-        font-size: 1.5rem;
-    }
-
-    /* Bottom Nav */
-    .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: var(--bg-card);
-        padding: 12px 20px;
-        padding-bottom: max(12px, env(safe-area-inset-bottom));
-        display: flex;
-        justify-content: space-around;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        z-index: 98;
-    }
-
-    .nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        font-size: 0.7rem;
-        cursor: pointer;
-        transition: color 0.2s;
-        padding: 4px 12px;
-    }
-
-    .nav-item.active {
-        color: var(--primary-light);
-    }
-
-    .nav-item span.icon {
-        font-size: 1.4rem;
-    }
-
-    /* Toast */
-    .toast {
-        position: fixed;
-        bottom: 100px;
-        left: 50%;
-        transform: translateX(-50%) translateY(100px);
-        background: var(--bg-card);
-        padding: 14px 24px;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
-        z-index: 300;
-        opacity: 0;
-        transition: all 0.3s;
-    }
-
-    .toast.show {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
-    }
-
-    /* Dark/Light Theme Toggle */
-    .theme-toggle {
-        position: relative;
-    }
-
-    /* Animations */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .entry-card {
-        animation: fadeIn 0.3s ease forwards;
-    }
-
-    /* Responsive */
-    @media (min-width: 768px) {
-        .main {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-    }
+    .canvas-container { position: fixed; inset: 0; }
+    canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    #mainCanvas { cursor: crosshair; z-index: 2; }
+    #bgCanvas { z-index: 1; }
+    
+    .panel { position: fixed; background: rgba(10,10,18,0.95); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; box-shadow: 0 15px 50px rgba(0,0,0,0.5); }
+    
+    .control-panel { top: 16px; left: 16px; width: 300px; max-height: calc(100vh - 32px); overflow-y: auto; z-index: 100; }
+    .control-panel::-webkit-scrollbar { width: 4px; }
+    .control-panel::-webkit-scrollbar-thumb { background: #ff6b35; border-radius: 2px; }
+    
+    .panel-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .panel-icon { width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #333, #000); box-shadow: 0 0 25px rgba(255,107,53,0.4); }
+    .panel-title { font-size: 17px; font-weight: 600; }
+    .panel-subtitle { font-size: 10px; color: #666; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+    
+    .section { margin-bottom: 18px; }
+    .section-title { font-size: 10px; font-weight: 600; color: #888; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+    
+    .control { margin-bottom: 14px; }
+    .control-label { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; }
+    .control-value { font-family: 'Consolas', monospace; font-size: 11px; color: #ff6b35; background: rgba(255,107,53,0.1); padding: 2px 7px; border-radius: 4px; }
+    
+    input[type="range"] { -webkit-appearance: none; width: 100%; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; background: #ff6b35; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 8px rgba(255,107,53,0.4); }
+    
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; }
+    .toggle { position: relative; width: 38px; height: 20px; cursor: pointer; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: rgba(255,255,255,0.1); border-radius: 10px; transition: 0.2s; }
+    .toggle-slider:before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #666; border-radius: 50%; transition: 0.2s; }
+    .toggle input:checked + .toggle-slider { background: #ff6b35; }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(18px); background: #fff; }
+    
+    .btn { padding: 9px 14px; border: none; border-radius: 7px; font-family: inherit; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: #ff6b35; color: white; }
+    .btn-primary:hover { background: #e55a2b; }
+    .btn-secondary { background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid rgba(255,255,255,0.1); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+    .btn-group { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-group .btn { flex: 1; }
+    
+    .spawner-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .spawn-btn { aspect-ratio: 1; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; color: #ccc; }
+    .spawn-btn:hover { background: rgba(255,107,53,0.1); border-color: rgba(255,107,53,0.3); }
+    .spawn-btn.active { background: #ff6b35; border-color: #ff6b35; color: white; }
+    .spawn-btn .icon { width: 24px; height: 24px; border-radius: 50%; }
+    .spawn-btn .label { font-size: 9px; }
+    .spawn-btn.earth .icon { background: linear-gradient(135deg, #3b82f6, #22c55e); }
+    .spawn-btn.mars .icon { background: linear-gradient(135deg, #dc2626, #ea580c); }
+    .spawn-btn.jupiter .icon { background: linear-gradient(135deg, #d97706, #fbbf24); }
+    .spawn-btn.star .icon { background: radial-gradient(circle, #fef3c7, #f59e0b); box-shadow: 0 0 10px rgba(251,191,38,0.5); }
+    .spawn-btn.neutron .icon { background: radial-gradient(circle, #e0e7ff, #6366f1); box-shadow: 0 0 10px rgba(99,102,241,0.5); }
+    .spawn-btn.asteroid .icon { background: linear-gradient(135deg, #57534e, #78716c); border-radius: 40% 60% 50% 50%; }
+    
+    .objects-list { max-height: 180px; overflow-y: auto; margin-top: 10px; }
+    .object-item { display: flex; align-items: center; gap: 9px; padding: 9px; background: rgba(255,255,255,0.02); border-radius: 7px; margin-bottom: 5px; cursor: pointer; }
+    .object-item:hover { background: rgba(255,255,255,0.05); }
+    .object-item.selected { background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.3); }
+    .object-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .object-info { flex: 1; }
+    .object-name { font-size: 11px; font-weight: 500; }
+    .object-status { font-size: 9px; color: #666; }
+    .object-status.danger { color: #ef4444; }
+    .object-status.warning { color: #fbbf24; }
+    .object-delete { width: 20px; height: 20px; border: none; background: transparent; color: #666; cursor: pointer; border-radius: 4px; font-size: 12px; }
+    .object-delete:hover { background: rgba(239,68,68,0.2); color: #ef4444; }
+    
+    .info-panel { top: 16px; right: 16px; width: 260px; z-index: 100; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .info-item { background: rgba(255,255,255,0.02); border-radius: 9px; padding: 11px; }
+    .info-item.full { grid-column: span 2; }
+    .info-label { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+    .info-value { font-family: 'Consolas', monospace; font-size: 14px; font-weight: 500; }
+    .info-value.accent { color: #ff6b35; }
+    .info-value.danger { color: #ef4444; }
+    .info-unit { font-size: 9px; color: #666; margin-left: 3px; }
+    
+    .selected-detail { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); display: none; }
+    .selected-detail.visible { display: block; }
+    .selected-header { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+    .selected-icon { width: 28px; height: 28px; border-radius: 50%; }
+    .selected-name { font-size: 13px; font-weight: 600; }
+    .selected-type { font-size: 10px; color: #666; }
+    
+    .timeline-panel { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); padding: 12px 20px; display: flex; align-items: center; gap: 16px; z-index: 100; }
+    .timeline-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .timeline-btn:hover, .timeline-btn.active { background: #ff6b35; border-color: #ff6b35; color: white; }
+    .timeline-time { font-family: 'Consolas', monospace; font-size: 13px; min-width: 70px; text-align: center; }
+    .speed-control { display: flex; align-items: center; gap: 8px; }
+    .speed-label { font-size: 10px; color: #666; }
+    .speed-value { font-family: 'Consolas', monospace; font-size: 12px; color: #ff6b35; min-width: 40px; }
+    
+    .help-panel { position: fixed; bottom: 16px; left: 16px; padding: 10px 16px; font-size: 10px; color: #666; display: flex; gap: 16px; z-index: 100; }
+    .help-key { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; color: #aaa; margin-right: 4px; }
+    
+    .event-log { position: fixed; bottom: 70px; right: 16px; width: 260px; z-index: 100; }
+    .event-item { background: rgba(10,10,18,0.95); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; padding: 10px 14px; margin-bottom: 7px; animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 9px; font-size: 11px; }
+    @keyframes slideIn { from { transform: translateX(80px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .event-item.destruction { border-color: rgba(239,68,68,0.4); }
+    .event-time { font-size: 9px; color: #666; margin-left: auto; }
+    
+    .loading { position: fixed; inset: 0; background: #05050a; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.4s; }
+    .loading.hidden { opacity: 0; pointer-events: none; }
+    .loading-icon { width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #222, #000); box-shadow: 0 0 50px rgba(255,107,53,0.4); margin-bottom: 20px; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .loading-text { font-size: 12px; color: #666; letter-spacing: 2px; text-transform: uppercase; }
 </style>
 ```
 
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <h1>📔 Mein Tagebuch</h1>
-        <div class="header-actions">
-            <button class="icon-btn" onclick="showExportModal()" title="Exportieren">📤</button>
-            <button class="icon-btn" onclick="toggleTheme()" title="Theme wechseln">🌙</button>
-        </div>
-    </header>
+    <div class="loading" id="loading">
+        <div class="loading-icon"></div>
+        <div class="loading-text">Simulation wird geladen...</div>
+    </div>
 
 ```
-<!-- Main Content -->
-<main class="main" id="mainContent">
-    <!-- Stats -->
-    <div class="stats-bar">
-        <div class="stat-card">
-            <div class="stat-value" id="totalEntries">0</div>
-            <div class="stat-label">Einträge</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="currentStreak">0</div>
-            <div class="stat-label">Tage Serie</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="thisMonth">0</div>
-            <div class="stat-label">Diesen Monat</div>
-        </div>
-    </div>
+<div class="canvas-container">
+    <canvas id="bgCanvas"></canvas>
+    <canvas id="mainCanvas"></canvas>
+</div>
 
-    <!-- Search & Filter -->
-    <div class="search-container">
-        <div class="search-wrapper">
-            <input type="text" class="search-input" id="searchInput" placeholder="Einträge durchsuchen..." oninput="filterEntries()">
-        </div>
-        <div class="filter-chips">
-            <button class="filter-chip active" data-filter="all" onclick="setFilter('all')">Alle</button>
-            <button class="filter-chip" data-filter="happy" onclick="setFilter('happy')">😊 Glücklich</button>
-            <button class="filter-chip" data-filter="neutral" onclick="setFilter('neutral')">😐 Neutral</button>
-            <button class="filter-chip" data-filter="sad" onclick="setFilter('sad')">😢 Traurig</button>
-            <button class="filter-chip" data-filter="angry" onclick="setFilter('angry')">😤 Wütend</button>
-            <button class="filter-chip" data-filter="love" onclick="setFilter('love')">😍 Verliebt</button>
+<div class="panel control-panel">
+    <div class="panel-header">
+        <div class="panel-icon"></div>
+        <div>
+            <div class="panel-title">Schwarzes Loch</div>
+            <div class="panel-subtitle">Gravitationssimulation</div>
         </div>
     </div>
-
-    <!-- Entries Container -->
-    <div class="entries-container" id="entriesContainer">
-        <!-- Entries will be rendered here -->
+    
+    <div class="section">
+        <div class="section-title">Objekt platzieren</div>
+        <div class="spawner-grid">
+            <button class="spawn-btn earth active" data-type="earth"><div class="icon"></div><div class="label">Erde</div></button>
+            <button class="spawn-btn mars" data-type="mars"><div class="icon"></div><div class="label">Mars</div></button>
+            <button class="spawn-btn jupiter" data-type="jupiter"><div class="icon"></div><div class="label">Jupiter</div></button>
+            <button class="spawn-btn star" data-type="star"><div class="icon"></div><div class="label">Stern</div></button>
+            <button class="spawn-btn neutron" data-type="neutron"><div class="icon"></div><div class="label">Neutron</div></button>
+            <button class="spawn-btn asteroid" data-type="asteroid"><div class="icon"></div><div class="label">Asteroid</div></button>
+        </div>
+        <p style="font-size:10px;color:#555;margin-top:10px;">Klicke + ziehe für Anfangsgeschwindigkeit</p>
     </div>
-</main>
-
-<!-- Calendar View -->
-<div class="main" id="calendarView" style="display: none;">
-    <div class="calendar-nav">
-        <button onclick="changeMonth(-1)">◀</button>
-        <h3 id="calendarTitle">Dezember 2024</h3>
-        <button onclick="changeMonth(1)">▶</button>
+    
+    <div class="section">
+        <div class="section-title">Aktive Objekte (<span id="objectCount">0</span>)</div>
+        <div class="objects-list" id="objectsList"></div>
+        <div class="btn-group">
+            <button class="btn btn-secondary" id="btnClearAll">Alle löschen</button>
+            <button class="btn btn-primary" id="btnAddRandom">+10 Zufällig</button>
+        </div>
     </div>
-    <div class="calendar-grid" id="calendarGrid">
-        <!-- Calendar will be rendered here -->
+    
+    <div class="section">
+        <div class="section-title">Schwarzes Loch</div>
+        <div class="control">
+            <div class="control-label"><span>Masse</span><span class="control-value" id="bhMassVal">10 M☉</span></div>
+            <input type="range" id="bhMass" min="1" max="100" value="10">
+        </div>
     </div>
-    <div class="entries-container" id="calendarEntries">
-        <!-- Selected day entries -->
+    
+    <div class="section">
+        <div class="section-title">Visualisierung</div>
+        <div class="toggle-row"><span>Akkretionsscheibe</span><label class="toggle"><input type="checkbox" id="showDisk" checked><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span>Orbit-Spuren</span><label class="toggle"><input type="checkbox" id="showTrails" checked><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span>ISCO anzeigen</span><label class="toggle"><input type="checkbox" id="showISCO" checked><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span>Gezeitenkräfte</span><label class="toggle"><input type="checkbox" id="enableTidal" checked><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span>Geschwindigkeitsvektor</span><label class="toggle"><input type="checkbox" id="showVelocity"><span class="toggle-slider"></span></label></div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Kamera</div>
+        <div class="control">
+            <div class="control-label"><span>Zoom</span><span class="control-value" id="zoomVal">1.0x</span></div>
+            <input type="range" id="cameraZoom" min="0.2" max="5" step="0.1" value="1">
+        </div>
+        <button class="btn btn-secondary" style="width:100%" id="btnResetCam">Kamera zurücksetzen</button>
     </div>
 </div>
 
-<!-- FAB Button -->
-<button class="fab" onclick="showNewEntryModal()">+</button>
-
-<!-- Bottom Navigation -->
-<nav class="bottom-nav">
-    <button class="nav-item active" onclick="switchView('entries')" data-view="entries">
-        <span class="icon">📝</span>
-        Einträge
-    </button>
-    <button class="nav-item" onclick="switchView('calendar')" data-view="calendar">
-        <span class="icon">📅</span>
-        Kalender
-    </button>
-    <button class="nav-item" onclick="switchView('stats')" data-view="stats">
-        <span class="icon">📊</span>
-        Statistik
-    </button>
-</nav>
-
-<!-- New/Edit Entry Modal -->
-<div class="modal-overlay" id="entryModal">
-    <div class="modal">
-        <div class="modal-handle"></div>
-        <h2 class="modal-title" id="modalTitle">Neuer Eintrag</h2>
-        
-        <form id="entryForm" onsubmit="saveEntry(event)">
-            <input type="hidden" id="entryId">
-            
-            <div class="form-group">
-                <label class="form-label">Wie fühlst du dich?</label>
-                <div class="mood-selector">
-                    <button type="button" class="mood-option" data-mood="happy" onclick="selectMood('happy')">
-                        😊
-                        <span>Glücklich</span>
-                    </button>
-                    <button type="button" class="mood-option" data-mood="neutral" onclick="selectMood('neutral')">
-                        😐
-                        <span>Neutral</span>
-                    </button>
-                    <button type="button" class="mood-option" data-mood="sad" onclick="selectMood('sad')">
-                        😢
-                        <span>Traurig</span>
-                    </button>
-                    <button type="button" class="mood-option" data-mood="angry" onclick="selectMood('angry')">
-                        😤
-                        <span>Wütend</span>
-                    </button>
-                    <button type="button" class="mood-option" data-mood="love" onclick="selectMood('love')">
-                        😍
-                        <span>Verliebt</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Titel</label>
-                <input type="text" class="form-input" id="entryTitle" placeholder="Gib deinem Eintrag einen Titel..." required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Was ist heute passiert?</label>
-                <textarea class="form-input" id="entryContent" placeholder="Schreibe deine Gedanken nieder..." required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Tags (Enter zum Hinzufügen)</label>
-                <div class="tags-input-container" id="tagsContainer">
-                    <input type="text" class="tags-input" id="tagsInput" placeholder="Tag hinzufügen..." onkeydown="handleTagInput(event)">
-                </div>
-            </div>
-
-            <button type="submit" class="btn-save">💾 Speichern</button>
-        </form>
+<div class="panel info-panel">
+    <div class="info-grid">
+        <div class="info-item"><div class="info-label">Schwarzschild-R</div><div class="info-value" id="infoRs">29.5<span class="info-unit">km</span></div></div>
+        <div class="info-item"><div class="info-label">ISCO</div><div class="info-value" id="infoISCO">6.0<span class="info-unit">rₛ</span></div></div>
+        <div class="info-item"><div class="info-label">Zeit</div><div class="info-value accent" id="infoTime">0.00<span class="info-unit">s</span></div></div>
+        <div class="info-item"><div class="info-label">Verschluckt</div><div class="info-value" id="infoAccreted">0</div></div>
     </div>
-</div>
-
-<!-- View Entry Modal -->
-<div class="modal-overlay" id="viewModal">
-    <div class="modal view-modal">
-        <div class="modal-handle"></div>
-        <div class="entry-meta">
-            <div>
-                <h2 id="viewTitle">Eintrag</h2>
-                <p id="viewDate" style="color: var(--text-secondary); font-size: 0.9rem;"></p>
-            </div>
-            <span id="viewMood" style="font-size: 2rem;"></span>
+    <div class="selected-detail" id="selectedDetail">
+        <div class="selected-header">
+            <div class="selected-icon" id="selectedIcon"></div>
+            <div><div class="selected-name" id="selectedName">-</div><div class="selected-type" id="selectedType">-</div></div>
         </div>
-        <div class="entry-full-content" id="viewContent"></div>
-        <div class="entry-tags" id="viewTags"></div>
-        <div class="entry-actions" style="margin-top: 24px;">
-            <button class="btn-edit" onclick="editFromView()">✏️ Bearbeiten</button>
-            <button class="btn-delete" onclick="deleteFromView()">🗑️ Löschen</button>
+        <div class="info-grid">
+            <div class="info-item"><div class="info-label">Entfernung</div><div class="info-value" id="selDist">-</div></div>
+            <div class="info-item"><div class="info-label">Geschwindigkeit</div><div class="info-value" id="selVel">-</div></div>
+            <div class="info-item"><div class="info-label">Gezeitenkraft</div><div class="info-value" id="selTidal">-</div></div>
+            <div class="info-item"><div class="info-label">Zeitdilatation</div><div class="info-value" id="selTimeDil">-</div></div>
         </div>
     </div>
 </div>
 
-<!-- Export Modal -->
-<div class="modal-overlay" id="exportModal">
-    <div class="modal">
-        <div class="modal-handle"></div>
-        <h2 class="modal-title">Exportieren</h2>
-        <div class="export-options">
-            <button class="export-btn" onclick="exportAsJSON()">
-                <span class="icon">📄</span>
-                <div>
-                    <strong>Als JSON</strong>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Für Backup & Import</p>
-                </div>
-            </button>
-            <button class="export-btn" onclick="exportAsText()">
-                <span class="icon">📝</span>
-                <div>
-                    <strong>Als Text</strong>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Lesbare Textdatei</p>
-                </div>
-            </button>
-            <button class="export-btn" onclick="document.getElementById('importFile').click()">
-                <span class="icon">📥</span>
-                <div>
-                    <strong>Importieren</strong>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary);">JSON-Backup laden</p>
-                </div>
-            </button>
-            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importFromJSON(event)">
-        </div>
+<div class="event-log" id="eventLog"></div>
+
+<div class="panel timeline-panel">
+    <button class="timeline-btn" id="btnSlower">⏪</button>
+    <button class="timeline-btn" id="btnPlayPause">▶</button>
+    <button class="timeline-btn" id="btnFaster">⏩</button>
+    <div class="speed-control">
+        <span class="speed-label">Speed:</span>
+        <span class="speed-value" id="speedValue">1.0x</span>
     </div>
+    <div class="timeline-time" id="timeDisplay">00:00.0</div>
 </div>
 
-<!-- Stats View -->
-<div class="main" id="statsView" style="display: none;">
-    <div class="stat-card" style="margin-bottom: 16px;">
-        <h3 style="margin-bottom: 16px;">Stimmungsverteilung</h3>
-        <div id="moodChart" style="display: flex; gap: 8px; justify-content: center;"></div>
-    </div>
-    <div class="stat-card" style="margin-bottom: 16px;">
-        <h3 style="margin-bottom: 16px;">Schreibaktivität</h3>
-        <div id="activityStats"></div>
-    </div>
-    <div class="stat-card">
-        <h3 style="margin-bottom: 16px;">Häufigste Tags</h3>
-        <div id="topTags" class="entry-tags"></div>
-    </div>
+<div class="panel help-panel">
+    <div><span class="help-key">Klick</span>Platzieren</div>
+    <div><span class="help-key">Drag</span>Geschwindigkeit</div>
+    <div><span class="help-key">Scroll</span>Zoom</div>
+    <div><span class="help-key">Space</span>Play/Pause</div>
 </div>
-
-<!-- Toast Notification -->
-<div class="toast" id="toast"></div>
+```
 
 <script>
-    // App State
-    let entries = JSON.parse(localStorage.getItem('diary_entries')) || [];
-    let currentMood = null;
-    let currentTags = [];
-    let currentFilter = 'all';
-    let currentViewId = null;
-    let currentMonth = new Date();
+const bgCanvas = document.getElementById('bgCanvas');
+const mainCanvas = document.getElementById('mainCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+const ctx = mainCanvas.getContext('2d');
 
-    // Mood Data
-    const moodEmojis = {
-        happy: '😊',
-        neutral: '😐',
-        sad: '😢',
-        angry: '😤',
-        love: '😍'
+// === OBJECT TYPES ===
+const TYPES = {
+    earth: { name: 'Erde', mass: 1, radius: 1, color: '#3b82f6', gradient: ['#3b82f6','#22c55e'], density: 5515 },
+    mars: { name: 'Mars', mass: 0.107, radius: 0.532, color: '#dc2626', gradient: ['#dc2626','#ea580c'], density: 3933 },
+    jupiter: { name: 'Jupiter', mass: 317.8, radius: 11.2, color: '#d97706', gradient: ['#d97706','#fbbf24'], density: 1326 },
+    star: { name: 'Stern', mass: 332946, radius: 109, color: '#fbbf24', gradient: ['#fef3c7','#f59e0b'], density: 1408, glow: true },
+    neutron: { name: 'Neutronenstern', mass: 465724, radius: 0.002, color: '#6366f1', gradient: ['#e0e7ff','#6366f1'], density: 4e17, glow: true },
+    asteroid: { name: 'Asteroid', mass: 1e-10, radius: 0.00005, color: '#78716c', gradient: ['#57534e','#78716c'], density: 3000 }
+};
+
+// === STATE ===
+const state = {
+    blackHole: { mass: 10, x: 0, y: 0 },
+    disk: { enabled: true, inner: 3, outer: 15 },
+    show: { trails: true, isco: true, velocity: false, disk: true },
+    enableTidal: true,
+    camera: { x: 0, y: 0, zoom: 1 },
+    time: 0, speed: 1, paused: true,
+    objects: [], selectedObject: null, selectedType: 'earth',
+    accretedCount: 0
+};
+
+let stars = [];
+
+// === PHYSICS ===
+function getRS(mass) { return 2.95 * mass; }
+function getISCO(mass) { return 3 * getRS(mass); }
+function getOrbitalVel(dist, mass) { return Math.sqrt(getRS(mass) / (2 * dist)); }
+function getTidalForce(dist, objRadius, bhMass) {
+    const rs = getRS(bhMass);
+    if (dist < rs) return Infinity;
+    return 2 * rs * objRadius / (dist * dist * dist);
+}
+function getTimeDilation(dist, bhMass) {
+    const rs = getRS(bhMass);
+    if (dist <= rs) return Infinity;
+    return 1 / Math.sqrt(1 - rs / dist);
+}
+
+// === OBJECT CLASS ===
+class SpaceObject {
+    constructor(type, x, y, vx = 0, vy = 0) {
+        this.id = Date.now() + Math.random();
+        this.type = type;
+        this.cfg = TYPES[type];
+        this.x = x; this.y = y;
+        this.vx = vx; this.vy = vy;
+        this.mass = this.cfg.mass;
+        this.radius = this.cfg.radius;
+        this.trail = [];
+        this.alive = true;
+        this.stretched = 1;
+        this.deathTime = null;
+    }
+    
+    get dist() { return Math.sqrt(this.x * this.x + this.y * this.y); }
+    get speed() { return Math.sqrt(this.vx * this.vx + this.vy * this.vy); }
+    get displayR() { return Math.max(4, (Math.log10(this.radius + 1) * 8 + 5) * state.camera.zoom); }
+    
+    update(dt) {
+        if (!this.alive) return;
+        
+        const rs = getRS(state.blackHole.mass);
+        const dist = this.dist;
+        
+        // Event Horizon
+        if (dist < rs * 1.01) { this.destroy('Ereignishorizont'); return; }
+        
+        // Tidal forces
+        if (state.enableTidal) {
+            const tidal = getTidalForce(dist, this.radius * 6371, state.blackHole.mass);
+            this.stretched = 1 + tidal * 10;
+            if (this.stretched > 3 && this.type !== 'neutron') {
+                this.destroy('Gezeitenkräfte'); return;
+            }
+        }
+        
+        // Gravity
+        const acc = rs / (2 * dist * dist);
+        const dx = -this.x / dist, dy = -this.y / dist;
+        
+        this.vx += acc * dx * dt;
+        this.vy += acc * dy * dt;
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        
+        // Trail
+        this.trail.push({ x: this.x, y: this.y });
+        if (this.trail.length > 200) this.trail.shift();
+    }
+    
+    destroy(reason) {
+        this.alive = false;
+        this.deathTime = state.time;
+        state.accretedCount++;
+        addEvent(`${this.cfg.name} zerstört: ${reason}`);
+    }
+    
+    draw() {
+        const pos = worldToScreen(this.x, this.y);
+        const r = this.displayR;
+        
+        // Trail
+        if (state.show.trails && this.trail.length > 1) {
+            ctx.beginPath();
+            const s = worldToScreen(this.trail[0].x, this.trail[0].y);
+            ctx.moveTo(s.x, s.y);
+            for (let i = 1; i < this.trail.length; i++) {
+                const p = worldToScreen(this.trail[i].x, this.trail[i].y);
+                ctx.lineTo(p.x, p.y);
+            }
+            ctx.strokeStyle = this.cfg.color + '60';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+        
+        // Velocity vector
+        if (state.show.velocity) {
+            const vScale = 50 * state.camera.zoom;
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            ctx.lineTo(pos.x + this.vx * vScale, pos.y + this.vy * vScale);
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+        
+        // Glow
+        if (this.cfg.glow) {
+            const glow = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, r * 3);
+            glow.addColorStop(0, this.cfg.color + '50');
+            glow.addColorStop(1, 'transparent');
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, r * 3, 0, Math.PI * 2);
+            ctx.fillStyle = glow;
+            ctx.fill();
+        }
+        
+        // Object
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        if (this.stretched > 1) {
+            const angle = Math.atan2(this.y, this.x);
+            ctx.rotate(angle);
+            ctx.scale(this.stretched, 1 / Math.sqrt(this.stretched));
+        }
+        
+        const grad = ctx.createRadialGradient(-r * 0.3, -r * 0.3, 0, 0, 0, r);
+        grad.addColorStop(0, this.cfg.gradient[0]);
+        grad.addColorStop(1, this.cfg.gradient[1] || this.cfg.gradient[0]);
+        
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.arc(-r * 0.25, -r * 0.25, r * 0.25, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.fill();
+        
+        ctx.restore();
+        
+        // Selection
+        if (state.selectedObject === this) {
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, r + 5, 0, Math.PI * 2);
+            ctx.strokeStyle = '#ff6b35';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    }
+}
+
+// === COORDINATES ===
+function worldToScreen(wx, wy) {
+    const s = 5 * state.camera.zoom;
+    return {
+        x: mainCanvas.width / 2 + (wx - state.camera.x) * s,
+        y: mainCanvas.height / 2 + (wy - state.camera.y) * s
     };
+}
 
-    const moodNames = {
-        happy: 'Glücklich',
-        neutral: 'Neutral',
-        sad: 'Traurig',
-        angry: 'Wütend',
-        love: 'Verliebt'
+function screenToWorld(sx, sy) {
+    const s = 5 * state.camera.zoom;
+    return {
+        x: (sx - mainCanvas.width / 2) / s + state.camera.x,
+        y: (sy - mainCanvas.height / 2) / s + state.camera.y
     };
+}
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-        renderEntries();
-        updateStats();
-        setupModalClose();
+// === RENDERING ===
+function generateStars() {
+    stars = [];
+    for (let i = 0; i < 400; i++) {
+        stars.push({
+            x: Math.random() * 2000 - 1000,
+            y: Math.random() * 2000 - 1000,
+            size: Math.random() * 1.5 + 0.5,
+            brightness: Math.random() * 0.7 + 0.3
+        });
+    }
+}
+
+function drawBackground() {
+    bgCtx.fillStyle = '#05050a';
+    bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+    
+    stars.forEach(star => {
+        const px = (star.x - state.camera.x * 0.1) % bgCanvas.width;
+        const py = (star.y - state.camera.y * 0.1) % bgCanvas.height;
+        const twinkle = 0.7 + 0.3 * Math.sin(state.time * 2 + star.x);
+        
+        bgCtx.beginPath();
+        bgCtx.arc(px < 0 ? px + bgCanvas.width : px, py < 0 ? py + bgCanvas.height : py, star.size, 0, Math.PI * 2);
+        bgCtx.fillStyle = `rgba(255,255,255,${star.brightness * twinkle})`;
+        bgCtx.fill();
     });
+}
 
-    // Modal Close on Background Click
-    function setupModalClose() {
-        document.querySelectorAll('.modal-overlay').forEach(overlay => {
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    overlay.classList.remove('active');
-                }
-            });
+function drawBlackHole() {
+    const mass = state.blackHole.mass;
+    const rs = getRS(mass);
+    const isco = getISCO(mass);
+    const center = worldToScreen(0, 0);
+    const scale = 5 * state.camera.zoom;
+    
+    // Accretion disk
+    if (state.show.disk) {
+        ctx.save();
+        ctx.translate(center.x, center.y);
+        ctx.scale(1, 0.25);
+        
+        const innerR = state.disk.inner * rs * scale;
+        const outerR = state.disk.outer * rs * scale;
+        
+        const diskGrad = ctx.createRadialGradient(0, 0, innerR, 0, 0, outerR);
+        diskGrad.addColorStop(0, 'rgba(255,180,80,0.7)');
+        diskGrad.addColorStop(0.3, 'rgba(255,120,40,0.4)');
+        diskGrad.addColorStop(0.7, 'rgba(255,80,20,0.15)');
+        diskGrad.addColorStop(1, 'transparent');
+        
+        ctx.beginPath();
+        ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+        ctx.arc(0, 0, innerR, 0, Math.PI * 2, true);
+        ctx.fillStyle = diskGrad;
+        ctx.fill();
+        ctx.restore();
+    }
+    
+    // ISCO
+    if (state.show.isco) {
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, isco * scale, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(74,222,128,0.35)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        ctx.fillStyle = 'rgba(74,222,128,0.5)';
+        ctx.font = '9px sans-serif';
+        ctx.fillText('ISCO', center.x + isco * scale + 4, center.y);
+    }
+    
+    // Photon sphere
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, rs * 1.5 * scale, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(251,191,38,0.4)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Event horizon
+    const bhGrad = ctx.createRadialGradient(center.x, center.y, 0, center.x, center.y, rs * scale * 1.3);
+    bhGrad.addColorStop(0, '#000');
+    bhGrad.addColorStop(0.8, '#000');
+    bhGrad.addColorStop(0.9, 'rgba(30,15,0,0.8)');
+    bhGrad.addColorStop(1, 'transparent');
+    
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, rs * scale * 1.3, 0, Math.PI * 2);
+    ctx.fillStyle = bhGrad;
+    ctx.fill();
+}
+
+function drawOrbitPreview(mouseWorld) {
+    if (!mouseWorld) return;
+    
+    const rs = getRS(state.blackHole.mass);
+    let x = mouseWorld.x, y = mouseWorld.y;
+    const dist = Math.sqrt(x * x + y * y);
+    const orbVel = getOrbitalVel(dist, state.blackHole.mass);
+    let vx = -y / dist * orbVel;
+    let vy = x / dist * orbVel;
+    
+    ctx.beginPath();
+    const start = worldToScreen(x, y);
+    ctx.moveTo(start.x, start.y);
+    
+    for (let i = 0; i < 400; i++) {
+        const d = Math.sqrt(x * x + y * y);
+        if (d < rs * 1.1 || d > 400) break;
+        
+        const acc = rs / (2 * d * d);
+        vx += acc * (-x / d) * 0.05;
+        vy += acc * (-y / d) * 0.05;
+        x += vx * 0.05;
+        y += vy * 0.05;
+        
+        const p = worldToScreen(x, y);
+        ctx.lineTo(p.x, p.y);
+    }
+    
+    ctx.strokeStyle = 'rgba(255,107,53,0.3)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+// === EVENTS ===
+function addEvent(message) {
+    const log = document.getElementById('eventLog');
+    const el = document.createElement('div');
+    el.className = 'event-item destruction';
+    el.innerHTML = `<span>💥</span><span>${message}</span><span class="event-time">${state.time.toFixed(1)}s</span>`;
+    log.appendChild(el);
+    
+    setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+    }, 4000);
+    
+    while (log.children.length > 5) log.firstChild.remove();
+}
+
+// === UI UPDATES ===
+function updateInfo() {
+    const mass = state.blackHole.mass;
+    const rs = getRS(mass);
+    
+    document.getElementById('infoRs').innerHTML = `${(rs * mass).toFixed(1)}<span class="info-unit">km</span>`;
+    document.getElementById('infoISCO').innerHTML = `${(getISCO(mass) / rs).toFixed(1)}<span class="info-unit">rₛ</span>`;
+    document.getElementById('infoTime').innerHTML = `${state.time.toFixed(2)}<span class="info-unit">s</span>`;
+    document.getElementById('infoAccreted').textContent = state.accretedCount;
+    
+    const detail = document.getElementById('selectedDetail');
+    if (state.selectedObject && state.selectedObject.alive) {
+        detail.classList.add('visible');
+        const obj = state.selectedObject;
+        
+        document.getElementById('selectedIcon').style.background = `linear-gradient(135deg, ${obj.cfg.gradient.join(', ')})`;
+        document.getElementById('selectedName').textContent = obj.cfg.name;
+        document.getElementById('selectedType').textContent = `${obj.mass.toFixed(2)} M⊕`;
+        document.getElementById('selDist').textContent = `${(obj.dist / rs).toFixed(2)} rₛ`;
+        document.getElementById('selVel').textContent = `${(obj.speed * 1000).toFixed(0)} km/s`;
+        
+        const tidal = getTidalForce(obj.dist, obj.radius * 6371, mass);
+        const tidalEl = document.getElementById('selTidal');
+        tidalEl.textContent = `${(tidal * 1e6).toFixed(1)} μg`;
+        tidalEl.className = 'info-value' + (tidal > 0.01 ? ' danger' : tidal > 0.001 ? ' warning' : '');
+        
+        document.getElementById('selTimeDil').textContent = `${getTimeDilation(obj.dist, mass).toFixed(3)}x`;
+    } else {
+        detail.classList.remove('visible');
+    }
+}
+
+function updateObjectsList() {
+    const list = document.getElementById('objectsList');
+    const alive = state.objects.filter(o => o.alive);
+    document.getElementById('objectCount').textContent = alive.length;
+    
+    list.innerHTML = alive.map(obj => {
+        const rs = getRS(state.blackHole.mass);
+        const isco = getISCO(state.blackHole.mass);
+        let status = `${(obj.dist / rs).toFixed(1)} rₛ`;
+        let statusClass = '';
+        
+        if (obj.dist < isco) { status = 'Einfallend!'; statusClass = 'danger'; }
+        else if (obj.stretched > 1.5) { status = 'Gestreckt!'; statusClass = 'warning'; }
+        
+        return `<div class="object-item ${state.selectedObject === obj ? 'selected' : ''}" data-id="${obj.id}">
+            <div class="object-dot" style="background:${obj.cfg.color}"></div>
+            <div class="object-info"><div class="object-name">${obj.cfg.name}</div><div class="object-status ${statusClass}">${status}</div></div>
+            <button class="object-delete" data-id="${obj.id}">✕</button>
+        </div>`;
+    }).join('');
+    
+    list.querySelectorAll('.object-item').forEach(el => {
+        el.addEventListener('click', e => {
+            if (e.target.classList.contains('object-delete')) return;
+            state.selectedObject = state.objects.find(o => o.id === parseFloat(el.dataset.id));
+            updateObjectsList();
         });
-    }
-
-    // Show New Entry Modal
-    function showNewEntryModal() {
-        document.getElementById('modalTitle').textContent = 'Neuer Eintrag';
-        document.getElementById('entryId').value = '';
-        document.getElementById('entryTitle').value = '';
-        document.getElementById('entryContent').value = '';
-        currentMood = null;
-        currentTags = [];
-        renderTags();
-        document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
-        document.getElementById('entryModal').classList.add('active');
-    }
-
-    // Select Mood
-    function selectMood(mood) {
-        currentMood = mood;
-        document.querySelectorAll('.mood-option').forEach(opt => {
-            opt.classList.toggle('selected', opt.dataset.mood === mood);
+    });
+    
+    list.querySelectorAll('.object-delete').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const obj = state.objects.find(o => o.id === parseFloat(btn.dataset.id));
+            if (obj) { obj.destroy('Entfernt'); if (state.selectedObject === obj) state.selectedObject = null; }
+            updateObjectsList();
         });
-    }
+    });
+}
 
-    // Handle Tag Input
-    function handleTagInput(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const input = e.target;
-            const tag = input.value.trim().toLowerCase();
-            if (tag && !currentTags.includes(tag)) {
-                currentTags.push(tag);
-                renderTags();
-            }
-            input.value = '';
-        }
-    }
+// === INPUT ===
+let spawnPreview = null, spawnStart = null, spawnVel = null;
 
-    // Render Tags
-    function renderTags() {
-        const container = document.getElementById('tagsContainer');
-        const input = document.getElementById('tagsInput');
-        container.innerHTML = '';
-        currentTags.forEach((tag, index) => {
-            const tagEl = document.createElement('span');
-            tagEl.className = 'tag';
-            tagEl.innerHTML = `${tag} <span class="tag-remove" onclick="removeTag(${index})">✕</span>`;
-            container.appendChild(tagEl);
+mainCanvas.addEventListener('mousedown', e => {
+    const rect = mainCanvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+    const world = screenToWorld(sx, sy);
+    spawnPreview = world;
+    spawnStart = { sx, sy, world };
+});
+
+mainCanvas.addEventListener('mousemove', e => {
+    const rect = mainCanvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+    
+    if (spawnStart) {
+        const dx = sx - spawnStart.sx, dy = sy - spawnStart.sy;
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            const scale = 5 * state.camera.zoom;
+            spawnVel = { sx: dx, sy: dy, wx: dx / scale * 0.02, wy: dy / scale * 0.02 };
+        } else spawnVel = null;
+    } else {
+        spawnPreview = screenToWorld(sx, sy);
+    }
+});
+
+mainCanvas.addEventListener('mouseup', e => {
+    if (!spawnStart) return;
+    
+    let vx = 0, vy = 0;
+    if (spawnVel) {
+        vx = spawnVel.wx; vy = spawnVel.wy;
+    } else {
+        const dist = Math.sqrt(spawnStart.world.x ** 2 + spawnStart.world.y ** 2);
+        const orbVel = getOrbitalVel(dist, state.blackHole.mass);
+        vx = -spawnStart.world.y / dist * orbVel;
+        vy = spawnStart.world.x / dist * orbVel;
+    }
+    
+    const obj = new SpaceObject(state.selectedType, spawnStart.world.x, spawnStart.world.y, vx, vy);
+    state.objects.push(obj);
+    state.selectedObject = obj;
+    updateObjectsList();
+    
+    spawnStart = null; spawnVel = null;
+});
+
+mainCanvas.addEventListener('mouseleave', () => { spawnPreview = null; });
+
+mainCanvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    state.camera.zoom = Math.max(0.2, Math.min(5, state.camera.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
+    document.getElementById('cameraZoom').value = state.camera.zoom;
+    document.getElementById('zoomVal').textContent = state.camera.zoom.toFixed(1) + 'x';
+}, { passive: false });
+
+document.addEventListener('keydown', e => {
+    if (e.code === 'Space') { e.preventDefault(); state.paused = !state.paused; updatePlayBtn(); }
+});
+
+// === CONTROLS ===
+function bindControls() {
+    document.querySelectorAll('.spawn-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.spawn-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            state.selectedType = btn.dataset.type;
         });
-        container.appendChild(input);
-    }
-
-    // Remove Tag
-    function removeTag(index) {
-        currentTags.splice(index, 1);
-        renderTags();
-    }
-
-    // Save Entry
-    function saveEntry(e) {
-        e.preventDefault();
+    });
+    
+    document.getElementById('bhMass').addEventListener('input', e => {
+        state.blackHole.mass = parseFloat(e.target.value);
+        document.getElementById('bhMassVal').textContent = state.blackHole.mass + ' M☉';
+    });
+    
+    document.getElementById('showDisk').addEventListener('change', e => state.show.disk = e.target.checked);
+    document.getElementById('showTrails').addEventListener('change', e => state.show.trails = e.target.checked);
+    document.getElementById('showISCO').addEventListener('change', e => state.show.isco = e.target.checked);
+    document.getElementById('enableTidal').addEventListener('change', e => state.enableTidal = e.target.checked);
+    document.getElementById('showVelocity').addEventListener('change', e => state.show.velocity = e.target.checked);
+    
+    document.getElementById('cameraZoom').addEventListener('input', e => {
+        state.camera.zoom = parseFloat(e.target.value);
+        document.getElementById('zoomVal').textContent = state.camera.zoom.toFixed(1) + 'x';
+    });
+    
+    document.getElementById('btnResetCam').addEventListener('click', () => {
+        state.camera = { x: 0, y: 0, zoom: 1 };
+        document.getElementById('cameraZoom').value = 1;
+        document.getElementById('zoomVal').textContent = '1.0x';
+    });
+    
+    document.getElementById('btnPlayPause').addEventListener('click', () => { state.paused = !state.paused; updatePlayBtn(); });
+    document.getElementById('btnSlower').addEventListener('click', () => { state.speed = Math.max(0.1, state.speed / 2); updateSpeed(); });
+    document.getElementById('btnFaster').addEventListener('click', () => { state.speed = Math.min(10, state.speed * 2); updateSpeed(); });
+    
+    document.getElementById('btnClearAll').addEventListener('click', () => {
+        state.objects.forEach(o => o.alive = false);
+        state.objects = [];
+        state.selectedObject = null;
+        updateObjectsList();
+    });
+    
+    document.getElementById('btnAddRandom').addEventListener('click', () => {
+        const types = ['earth', 'mars', 'jupiter', 'asteroid', 'asteroid', 'asteroid'];
+        const rs = getRS(state.blackHole.mass);
         
-        const id = document.getElementById('entryId').value;
-        const title = document.getElementById('entryTitle').value.trim();
-        const content = document.getElementById('entryContent').value.trim();
-
-        if (!currentMood) {
-            showToast('Bitte wähle eine Stimmung aus');
-            return;
+        for (let i = 0; i < 10; i++) {
+            const type = types[Math.floor(Math.random() * types.length)];
+            const angle = Math.random() * Math.PI * 2;
+            const dist = rs * (5 + Math.random() * 20);
+            const x = Math.cos(angle) * dist, y = Math.sin(angle) * dist;
+            const orbVel = getOrbitalVel(dist, state.blackHole.mass) * (0.8 + Math.random() * 0.4);
+            state.objects.push(new SpaceObject(type, x, y, -y / dist * orbVel, x / dist * orbVel));
         }
+        updateObjectsList();
+    });
+}
 
-        const entry = {
-            id: id || Date.now().toString(),
-            title,
-            content,
-            mood: currentMood,
-            tags: [...currentTags],
-            createdAt: id ? entries.find(e => e.id === id)?.createdAt : new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
+function updatePlayBtn() {
+    document.getElementById('btnPlayPause').textContent = state.paused ? '▶' : '⏸';
+    document.getElementById('btnPlayPause').classList.toggle('active', !state.paused);
+}
 
-        if (id) {
-            const index = entries.findIndex(e => e.id === id);
-            entries[index] = entry;
-            showToast('Eintrag aktualisiert! ✨');
-        } else {
-            entries.unshift(entry);
-            showToast('Eintrag gespeichert! 🎉');
-        }
+function updateSpeed() {
+    document.getElementById('speedValue').textContent = state.speed.toFixed(1) + 'x';
+}
 
-        saveToStorage();
-        renderEntries();
-        updateStats();
-        document.getElementById('entryModal').classList.remove('active');
+// === MAIN LOOP ===
+function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    [bgCanvas, mainCanvas].forEach(c => {
+        c.width = window.innerWidth * dpr;
+        c.height = window.innerHeight * dpr;
+        c.style.width = window.innerWidth + 'px';
+        c.style.height = window.innerHeight + 'px';
+        c.getContext('2d').scale(dpr, dpr);
+    });
+}
+
+function simulate(dt) {
+    for (let i = 0; i < 4; i++) {
+        state.objects.forEach(obj => obj.update(dt / 4));
     }
+    state.objects = state.objects.filter(o => o.alive || (state.time - o.deathTime < 1));
+}
 
-    // Render Entries
-    function renderEntries() {
-        const container = document.getElementById('entriesContainer');
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+function render() {
+    ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+    drawBackground();
+    
+    if (spawnPreview && !spawnStart) drawOrbitPreview(spawnPreview);
+    
+    drawBlackHole();
+    state.objects.forEach(obj => { if (obj.alive) obj.draw(); });
+    
+    // Spawn preview
+    if (spawnStart) {
+        const pos = worldToScreen(spawnStart.world.x, spawnStart.world.y);
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 12, 0, Math.PI * 2);
+        ctx.fillStyle = TYPES[state.selectedType].color + '50';
+        ctx.fill();
+        ctx.strokeStyle = TYPES[state.selectedType].color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
         
-        let filtered = entries.filter(entry => {
-            const matchesFilter = currentFilter === 'all' || entry.mood === currentFilter;
-            const matchesSearch = !searchTerm || 
-                entry.title.toLowerCase().includes(searchTerm) ||
-                entry.content.toLowerCase().includes(searchTerm) ||
-                entry.tags.some(t => t.includes(searchTerm));
-            return matchesFilter && matchesSearch;
-        });
-
-        if (filtered.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">📔</div>
-                    <h2>${entries.length === 0 ? 'Noch keine Einträge' : 'Keine Ergebnisse'}</h2>
-                    <p>${entries.length === 0 ? 'Tippe auf + um deinen ersten Eintrag zu schreiben' : 'Versuche andere Suchbegriffe oder Filter'}</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = filtered.map((entry, index) => `
-            <div class="entry-card mood-${entry.mood}" style="animation-delay: ${index * 0.05}s" onclick="viewEntry('${entry.id}')">
-                <div class="entry-header">
-                    <span class="entry-date">${formatDate(entry.createdAt)}</span>
-                    <span class="entry-mood">${moodEmojis[entry.mood]}</span>
-                </div>
-                <h3 class="entry-title">${escapeHtml(entry.title)}</h3>
-                <p class="entry-preview">${escapeHtml(entry.content)}</p>
-                ${entry.tags.length > 0 ? `
-                    <div class="entry-tags">
-                        ${entry.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
-                    </div>
-                ` : ''}
-                <div class="entry-actions" onclick="event.stopPropagation()">
-                    <button class="btn-edit" onclick="editEntry('${entry.id}')">✏️ Bearbeiten</button>
-                    <button class="btn-delete" onclick="deleteEntry('${entry.id}')">🗑️ Löschen</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // View Entry
-    function viewEntry(id) {
-        const entry = entries.find(e => e.id === id);
-        if (!entry) return;
-        
-        currentViewId = id;
-        document.getElementById('viewTitle').textContent = entry.title;
-        document.getElementById('viewDate').textContent = formatDate(entry.createdAt, true);
-        document.getElementById('viewMood').textContent = moodEmojis[entry.mood];
-        document.getElementById('viewContent').textContent = entry.content;
-        document.getElementById('viewTags').innerHTML = entry.tags.map(tag => `<span class="tag">#${tag}</span>`).join('');
-        document.getElementById('viewModal').classList.add('active');
-    }
-
-    // Edit from View
-    function editFromView() {
-        document.getElementById('viewModal').classList.remove('active');
-        editEntry(currentViewId);
-    }
-
-    // Delete from View
-    function deleteFromView() {
-        document.getElementById('viewModal').classList.remove('active');
-        deleteEntry(currentViewId);
-    }
-
-    // Edit Entry
-    function editEntry(id) {
-        const entry = entries.find(e => e.id === id);
-        if (!entry) return;
-
-        document.getElementById('modalTitle').textContent = 'Eintrag bearbeiten';
-        document.getElementById('entryId').value = entry.id;
-        document.getElementById('entryTitle').value = entry.title;
-        document.getElementById('entryContent').value = entry.content;
-        currentMood = entry.mood;
-        currentTags = [...entry.tags];
-        
-        document.querySelectorAll('.mood-option').forEach(opt => {
-            opt.classList.toggle('selected', opt.dataset.mood === entry.mood);
-        });
-        
-        renderTags();
-        document.getElementById('entryModal').classList.add('active');
-    }
-
-    // Delete Entry
-    function deleteEntry(id) {
-        if (confirm('Möchtest du diesen Eintrag wirklich löschen?')) {
-            entries = entries.filter(e => e.id !== id);
-            saveToStorage();
-            renderEntries();
-            updateStats();
-            showToast('Eintrag gelöscht 🗑️');
+        if (spawnVel) {
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            ctx.lineTo(pos.x + spawnVel.sx, pos.y + spawnVel.sy);
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 3;
+            ctx.stroke();
         }
     }
+}
 
-    // Filter
-    function setFilter(filter) {
-        currentFilter = filter;
-        document.querySelectorAll('.filter-chip').forEach(chip => {
-            chip.classList.toggle('active', chip.dataset.filter === filter);
-        });
-        renderEntries();
+function gameLoop(ts) {
+    if (!state.paused) {
+        const dt = 0.01 * state.speed;
+        simulate(dt);
+        state.time += dt;
     }
+    
+    render();
+    updateInfo();
+    document.getElementById('timeDisplay').textContent = 
+        `${Math.floor(state.time / 60).toString().padStart(2, '0')}:${(state.time % 60).toFixed(1).padStart(4, '0')}`;
+    
+    requestAnimationFrame(gameLoop);
+}
 
-    function filterEntries() {
-        renderEntries();
-    }
+// === INIT ===
+function init() {
+    resize();
+    generateStars();
+    bindControls();
+    updatePlayBtn();
+    updateSpeed();
+    
+    // Demo objects
+    const rs = getRS(state.blackHole.mass);
+    [
+        { type: 'earth', dist: 12, angle: 0 },
+        { type: 'mars', dist: 18, angle: Math.PI / 3 },
+        { type: 'jupiter', dist: 25, angle: Math.PI }
+    ].forEach(d => {
+        const x = Math.cos(d.angle) * d.dist * rs;
+        const y = Math.sin(d.angle) * d.dist * rs;
+        const v = getOrbitalVel(d.dist * rs, state.blackHole.mass);
+        state.objects.push(new SpaceObject(d.type, x, y, -y / (d.dist * rs) * v, x / (d.dist * rs) * v));
+    });
+    updateObjectsList();
+    
+    window.addEventListener('resize', resize);
+    
+    setTimeout(() => document.getElementById('loading').classList.add('hidden'), 500);
+    requestAnimationFrame(gameLoop);
+}
 
-    // Update Stats
-    function updateStats() {
-        document.getElementById('totalEntries').textContent = entries.length;
-        
-        // Calculate streak
-        let streak = 0;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        for (let i = 0; i < 365; i++) {
-            const checkDate = new Date(today);
-            checkDate.setDate(checkDate.getDate() - i);
-            const dateStr = checkDate.toISOString().split('T')[0];
-            
-            const hasEntry = entries.some(e => e.createdAt.split('T')[0] === dateStr);
-            if (hasEntry) {
-                streak++;
-            } else if (i > 0) {
-                break;
-            }
-        }
-        document.getElementById('currentStreak').textContent = streak;
-
-        // This month
-        const thisMonth = new Date().toISOString().slice(0, 7);
-        const monthEntries = entries.filter(e => e.createdAt.slice(0, 7) === thisMonth).length;
-        document.getElementById('thisMonth').textContent = monthEntries;
-    }
-
-    // Save to LocalStorage
-    function saveToStorage() {
-        localStorage.setItem('diary_entries', JSON.stringify(entries));
-    }
-
-    // View Switching
-    function switchView(view) {
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.toggle('active', item.dataset.view === view);
-        });
-        
-        document.getElementById('mainContent').style.display = view === 'entries' ? 'block' : 'none';
-        document.getElementById('calendarView').style.display = view === 'calendar' ? 'block' : 'none';
-        document.getElementById('statsView').style.display = view === 'stats' ? 'block' : 'none';
-        
-        document.querySelector('.fab').style.display = view === 'entries' ? 'flex' : 'none';
-
-        if (view === 'calendar') renderCalendar();
-        if (view === 'stats') renderStats();
-    }
-
-    // Calendar
-    function renderCalendar() {
-        const grid = document.getElementById('calendarGrid');
-        const year = currentMonth.getFullYear();
-        const month = currentMonth.getMonth();
-        
-        document.getElementById('calendarTitle').textContent = 
-            new Date(year, month).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
-
-        const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-        let html = days.map(d => `<div class="calendar-header">${d}</div>`).join('');
-
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const today = new Date().toISOString().split('T')[0];
-
-        // Previous month days
-        const prevMonthDays = new Date(year, month, 0).getDate();
-        for (let i = firstDay - 1; i >= 0; i--) {
-            html += `<div class="calendar-day other-month">${prevMonthDays - i}</div>`;
-        }
-
-        // Current month days
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const hasEntry = entries.some(e => e.createdAt.split('T')[0] === dateStr);
-            const isToday = dateStr === today;
-            
-            html += `<div class="calendar-day${hasEntry ? ' has-entry' : ''}${isToday ? ' today' : ''}" 
-                onclick="showDayEntries('${dateStr}')">${day}</div>`;
-        }
-
-        // Next month days
-        const remainingDays = 42 - firstDay - daysInMonth;
-        for (let i = 1; i <= remainingDays; i++) {
-            html += `<div class="calendar-day other-month">${i}</div>`;
-        }
-
-        grid.innerHTML = html;
-    }
-
-    function changeMonth(delta) {
-        currentMonth.setMonth(currentMonth.getMonth() + delta);
-        renderCalendar();
-    }
-
-    function showDayEntries(dateStr) {
-        const dayEntries = entries.filter(e => e.createdAt.split('T')[0] === dateStr);
-        const container = document.getElementById('calendarEntries');
-        
-        if (dayEntries.length === 0) {
-            container.innerHTML = `<p style="text-align: center; color: var(--text-secondary);">Keine Einträge an diesem Tag</p>`;
-            return;
-        }
-
-        container.innerHTML = dayEntries.map(entry => `
-            <div class="entry-card mood-${entry.mood}" onclick="viewEntry('${entry.id}')">
-                <div class="entry-header">
-                    <span class="entry-date">${formatDate(entry.createdAt)}</span>
-                    <span class="entry-mood">${moodEmojis[entry.mood]}</span>
-                </div>
-                <h3 class="entry-title">${escapeHtml(entry.title)}</h3>
-                <p class="entry-preview">${escapeHtml(entry.content)}</p>
-            </div>
-        `).join('');
-    }
-
-    // Stats View
-    function renderStats() {
-        // Mood Chart
-        const moodCounts = { happy: 0, neutral: 0, sad: 0, angry: 0, love: 0 };
-        entries.forEach(e => moodCounts[e.mood]++);
-        
-        const maxCount = Math.max(...Object.values(moodCounts), 1);
-        const moodChart = document.getElementById('moodChart');
-        moodChart.innerHTML = Object.entries(moodCounts).map(([mood, count]) => `
-            <div style="text-align: center;">
-                <div style="height: 100px; display: flex; align-items: flex-end; justify-content: center;">
-                    <div style="width: 30px; height: ${(count / maxCount) * 100}%; background: var(--primary); border-radius: 4px;"></div>
-                </div>
-                <div style="font-size: 1.2rem; margin-top: 8px;">${moodEmojis[mood]}</div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary);">${count}</div>
-            </div>
-        `).join('');
-
-        // Activity Stats
-        const activityStats = document.getElementById('activityStats');
-        const avgLength = entries.length > 0 
-            ? Math.round(entries.reduce((sum, e) => sum + e.content.length, 0) / entries.length)
-            : 0;
-        
-        activityStats.innerHTML = `
-            <p style="margin-bottom: 8px;">📝 Durchschnittliche Länge: <strong>${avgLength} Zeichen</strong></p>
-            <p>📅 Erster Eintrag: <strong>${entries.length > 0 ? formatDate(entries[entries.length - 1].createdAt) : 'Noch keine'}</strong></p>
-        `;
-
-        // Top Tags
-        const tagCounts = {};
-        entries.forEach(e => e.tags.forEach(t => tagCounts[t] = (tagCounts[t] || 0) + 1));
-        const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
-        
-        document.getElementById('topTags').innerHTML = sortedTags.length > 0
-            ? sortedTags.map(([tag, count]) => `<span class="tag">#${tag} (${count})</span>`).join('')
-            : '<p style="color: var(--text-secondary);">Noch keine Tags</p>';
-    }
-
-    // Export Functions
-    function showExportModal() {
-        document.getElementById('exportModal').classList.add('active');
-    }
-
-    function exportAsJSON() {
-        const data = JSON.stringify(entries, null, 2);
-        downloadFile(data, 'tagebuch-backup.json', 'application/json');
-        showToast('JSON exportiert! 📄');
-        document.getElementById('exportModal').classList.remove('active');
-    }
-
-    function exportAsText() {
-        let text = '📔 MEIN TAGEBUCH\n' + '='.repeat(50) + '\n\n';
-        
-        entries.forEach(entry => {
-            text += `${moodEmojis[entry.mood]} ${entry.title}\n`;
-            text += `📅 ${formatDate(entry.createdAt, true)}\n`;
-            text += '-'.repeat(30) + '\n';
-            text += entry.content + '\n';
-            if (entry.tags.length > 0) {
-                text += `🏷️ ${entry.tags.map(t => '#' + t).join(' ')}\n`;
-            }
-            text += '\n' + '='.repeat(50) + '\n\n';
-        });
-
-        downloadFile(text, 'tagebuch.txt', 'text/plain');
-        showToast('Text exportiert! 📝');
-        document.getElementById('exportModal').classList.remove('active');
-    }
-
-    function importFromJSON(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const imported = JSON.parse(e.target.result);
-                if (Array.isArray(imported)) {
-                    if (confirm(`${imported.length} Einträge gefunden. Möchtest du sie importieren? (Bestehende Einträge bleiben erhalten)`)) {
-                        entries = [...imported, ...entries];
-                        saveToStorage();
-                        renderEntries();
-                        updateStats();
-                        showToast(`${imported.length} Einträge importiert! 🎉`);
-                    }
-                }
-            } catch (err) {
-                showToast('Fehler beim Import 😕');
-            }
-        };
-        reader.readAsText(file);
-        event.target.value = '';
-        document.getElementById('exportModal').classList.remove('active');
-    }
-
-    function downloadFile(content, filename, type) {
-        const blob = new Blob([content], { type });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    // Theme Toggle
-    function toggleTheme() {
-        document.body.classList.toggle('light-theme');
-        showToast('Theme gewechselt! 🎨');
-    }
-
-    // Toast
-    function showToast(message) {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    // Utilities
-    function formatDate(isoString, full = false) {
-        const date = new Date(isoString);
-        if (full) {
-            return date.toLocaleDateString('de-DE', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-        return date.toLocaleDateString('de-DE', { 
-            day: 'numeric', 
-            month: 'short', 
-            year: 'numeric' 
-        });
-    }
-
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
+init();
 </script>
-```
 
 </body>
 </html>
