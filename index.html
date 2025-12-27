@@ -4,793 +4,422 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schwarzes Loch - Relativistisches Raytracing</title>
+    <title>Schwarzes Loch Simulation</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: #000; 
-            overflow: hidden; 
-            font-family: 'Segoe UI', sans-serif;
-            color: #fff;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        canvas { display: block; cursor: grab; }
-        canvas:active { cursor: grabbing; }
-
-```
-    .ui {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        background: rgba(0, 0, 0, 0.85);
-        padding: 20px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 150, 50, 0.3);
-        min-width: 280px;
-        max-height: calc(100vh - 40px);
-        overflow-y: auto;
-    }
-    .ui h2 {
-        font-size: 18px;
-        margin-bottom: 5px;
-        color: #ff9944;
-        font-weight: 600;
-    }
-    .ui .subtitle {
-        font-size: 11px;
-        color: #666;
-        margin-bottom: 15px;
-    }
-    .section {
-        margin-bottom: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    .section:last-child { border-bottom: none; }
-    .section h3 {
-        font-size: 12px;
-        color: #888;
-        margin-bottom: 10px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .control {
-        margin-bottom: 10px;
-    }
-    .control label {
-        display: flex;
-        justify-content: space-between;
-        font-size: 12px;
-        margin-bottom: 4px;
-        color: #aaa;
-    }
-    .control label span { color: #ff9944; }
-    .control input[type="range"] {
-        width: 100%;
-        accent-color: #ff6600;
-    }
-    .control input[type="checkbox"] {
-        accent-color: #ff6600;
-        margin-right: 8px;
-    }
-    .checkbox-label {
-        display: flex;
-        align-items: center;
-        font-size: 12px;
-        color: #aaa;
-        cursor: pointer;
-    }
-    .stats {
-        font-size: 11px;
-        color: #666;
-        line-height: 1.6;
-    }
-    .stats strong { color: #ff9944; }
-    .help {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        background: rgba(0, 0, 0, 0.85);
-        padding: 15px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 150, 50, 0.2);
-        font-size: 11px;
-        color: #666;
-        line-height: 1.8;
-    }
-    .help kbd {
-        background: rgba(255,255,255,0.1);
-        padding: 2px 6px;
-        border-radius: 3px;
-        color: #aaa;
-    }
-    .loading {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 14px;
-        color: #ff9944;
-    }
-    .formula {
-        font-family: 'Times New Roman', serif;
-        font-style: italic;
-        background: rgba(255,255,255,0.05);
-        padding: 8px 12px;
-        border-radius: 6px;
-        margin: 10px 0;
-        font-size: 13px;
-        color: #ccc;
-    }
-</style>
-```
-
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 12px;
+            color: #fff;
+            border: 1px solid rgba(255, 150, 50, 0.3);
+            min-width: 220px;
+        }
+        .controls h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #ff9944;
+            font-weight: 500;
+        }
+        .control-group {
+            margin-bottom: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #aaa;
+        }
+        .control-group input[type="range"] {
+            width: 100%;
+            accent-color: #ff6600;
+        }
+        .info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+        }
+        .stats {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 12px;
+            color: #888;
+            font-size: 12px;
+            border: 1px solid rgba(255, 150, 50, 0.2);
+        }
+        .stats div {
+            margin: 4px 0;
+        }
+        .stats span {
+            color: #ff9944;
+        }
+    </style>
 </head>
 <body>
-    <div class="loading" id="loading">Initialisiere Raytracer...</div>
     <canvas id="canvas"></canvas>
 
 ```
-<div class="ui">
-    <h2>⚫ Schwarzschild-Metrik</h2>
-    <div class="subtitle">Relativistisches Raytracing</div>
-    
-    <div class="formula">
-        ds² = -(1-rₛ/r)dt² + (1-rₛ/r)⁻¹dr² + r²dΩ²
+<div class="controls">
+    <h2>⚫ Schwarzes Loch</h2>
+    <div class="control-group">
+        <label>Masse: <span id="massValue">50</span> M☉</label>
+        <input type="range" id="mass" min="20" max="100" value="50">
     </div>
-    
-    <div class="section">
-        <h3>Schwarzes Loch</h3>
-        <div class="control">
-            <label>Masse (M) <span id="massVal">1.0</span> M☉</label>
-            <input type="range" id="mass" min="0.5" max="3" step="0.1" value="1">
-        </div>
+    <div class="control-group">
+        <label>Akkretionsrate: <span id="accretionValue">50</span>%</label>
+        <input type="range" id="accretion" min="10" max="100" value="50">
     </div>
-    
-    <div class="section">
-        <h3>Akkretionsscheibe</h3>
-        <div class="control">
-            <label>Innerer Radius <span id="diskInnerVal">3.0</span> rₛ</label>
-            <input type="range" id="diskInner" min="1.5" max="4" step="0.1" value="3">
-        </div>
-        <div class="control">
-            <label>Äußerer Radius <span id="diskOuterVal">8.0</span> rₛ</label>
-            <input type="range" id="diskOuter" min="5" max="15" step="0.5" value="8">
-        </div>
-        <div class="control">
-            <label>Temperatur <span id="diskTempVal">5000</span> K</label>
-            <input type="range" id="diskTemp" min="2000" max="10000" step="100" value="5000">
-        </div>
+    <div class="control-group">
+        <label>Rotationsgeschwindigkeit: <span id="spinValue">50</span>%</label>
+        <input type="range" id="spin" min="0" max="100" value="50">
     </div>
-    
-    <div class="section">
-        <h3>Rendering</h3>
-        <div class="control">
-            <label>Auflösung <span id="resVal">0.5</span>x</label>
-            <input type="range" id="resolution" min="0.25" max="1" step="0.05" value="0.5">
-        </div>
-        <div class="control">
-            <label>Max. Integrationsschritte <span id="stepsVal">500</span></label>
-            <input type="range" id="steps" min="100" max="1000" step="50" value="500">
-        </div>
-        <div class="control">
-            <label class="checkbox-label">
-                <input type="checkbox" id="showGrid" checked>
-                Hintergrund-Gitter anzeigen
-            </label>
-        </div>
-        <div class="control">
-            <label class="checkbox-label">
-                <input type="checkbox" id="showStars" checked>
-                Sterne anzeigen
-            </label>
-        </div>
-    </div>
-    
-    <div class="section">
-        <h3>Kameraposition</h3>
-        <div class="stats" id="cameraStats">
-            Entfernung: <strong>15.0</strong> rₛ<br>
-            Theta: <strong>80°</strong><br>
-            Phi: <strong>0°</strong>
-        </div>
+    <div class="control-group">
+        <label>Sterne im Hintergrund: <span id="starsValue">200</span></label>
+        <input type="range" id="stars" min="50" max="500" value="200">
     </div>
 </div>
 
-<div class="help">
-    <kbd>Maus ziehen</kbd> Kamera rotieren<br>
-    <kbd>Mausrad</kbd> Zoom<br>
-    <kbd>Shift + Mausrad</kbd> Feiner Zoom
+<div class="stats">
+    <div>Partikel: <span id="particleCount">0</span></div>
+    <div>Schwarzschild-Radius: <span id="rsValue">0</span> px</div>
+    <div>Photonenring: <span id="prValue">0</span> px</div>
+</div>
+
+<div class="info">
+    Klicken um Partikel hinzuzufügen · Mausrad für Zoom
 </div>
 
 <script>
-    // === WebGL Setup ===
     const canvas = document.getElementById('canvas');
-    const gl = canvas.getContext('webgl2');
-    const loading = document.getElementById('loading');
+    const ctx = canvas.getContext('2d');
     
-    if (!gl) {
-        loading.textContent = 'WebGL2 wird nicht unterstützt!';
-        throw new Error('WebGL2 not supported');
-    }
-
-    // === Shader Source Code ===
-    const vertexShaderSource = `#version 300 es
-        in vec2 a_position;
-        out vec2 v_uv;
-        void main() {
-            v_uv = a_position * 0.5 + 0.5;
-            gl_Position = vec4(a_position, 0.0, 1.0);
-        }
-    `;
-
-    const fragmentShaderSource = `#version 300 es
-        precision highp float;
-        
-        in vec2 v_uv;
-        out vec4 fragColor;
-        
-        // Uniforms
-        uniform vec2 u_resolution;
-        uniform float u_mass;           // Schwarzschild mass (sets rs = 2M)
-        uniform float u_diskInner;      // Inner disk radius in rs
-        uniform float u_diskOuter;      // Outer disk radius in rs
-        uniform float u_diskTemp;       // Disk temperature
-        uniform int u_maxSteps;         // Max integration steps
-        uniform bool u_showGrid;
-        uniform bool u_showStars;
-        
-        // Camera (spherical coordinates)
-        uniform float u_camR;           // Distance from black hole
-        uniform float u_camTheta;       // Polar angle (0 = north pole)
-        uniform float u_camPhi;         // Azimuthal angle
-        
-        // Constants
-        const float PI = 3.14159265359;
-        const float rs = 2.0;           // Schwarzschild radius (2GM/c² = 2M in geometric units)
-        
-        // === Pseudo-random functions ===
-        float hash(vec2 p) {
-            return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-        }
-        
-        float hash3(vec3 p) {
-            return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453);
-        }
-        
-        // === Color functions ===
-        // Blackbody radiation approximation
-        vec3 blackbodyColor(float temp) {
-            // Attempt to approximate blackbody spectrum
-            float t = temp / 1000.0;
-            vec3 color;
-            
-            // Red channel
-            if (t <= 6.6) {
-                color.r = 1.0;
-            } else {
-                color.r = 1.292936 * pow(t - 6.0, -0.1332047);
-            }
-            
-            // Green channel
-            if (t <= 6.6) {
-                color.g = 0.39008 * log(t) - 0.63184;
-            } else {
-                color.g = 1.129890 * pow(t - 6.0, -0.0755148);
-            }
-            
-            // Blue channel
-            if (t >= 6.6) {
-                color.b = 1.0;
-            } else if (t <= 1.9) {
-                color.b = 0.0;
-            } else {
-                color.b = 0.54320 * log(t - 1.0) - 1.19625;
-            }
-            
-            return clamp(color, 0.0, 1.0);
-        }
-        
-        // === Geodesic Integration ===
-        // We use the Schwarzschild metric in spherical coordinates
-        // The equations of motion come from the geodesic equation
-        
-        // State: (r, theta, phi, pr, ptheta)
-        // We use conserved quantities: E (energy), L (angular momentum)
-        
-        struct Ray {
-            float r;
-            float theta;
-            float phi;
-            float pr;      // dr/dlambda
-            float ptheta;  // dtheta/dlambda
-        };
-        
-        // Effective potential and derivatives for null geodesics
-        float metric_f(float r) {
-            return 1.0 - rs / r;
-        }
-        
-        // Compute derivatives for RK4 integration
-        // Using Hamiltonian formulation for Schwarzschild geodesics
-        void geodesicDerivatives(Ray ray, float L, float E, out Ray dray) {
-            float r = ray.r;
-            float theta = ray.theta;
-            float f = metric_f(r);
-            float sin_theta = sin(theta);
-            float cos_theta = cos(theta);
-            
-            // Avoid singularities
-            if (abs(sin_theta) < 1e-6) sin_theta = 1e-6;
-            
-            // dr/dlambda = pr * f
-            dray.r = ray.pr * f;
-            
-            // dtheta/dlambda = ptheta / r²
-            dray.theta = ray.ptheta / (r * r);
-            
-            // dphi/dlambda = L / (r² sin²θ)
-            dray.phi = L / (r * r * sin_theta * sin_theta);
-            
-            // dpr/dlambda from geodesic equation
-            float L2 = L * L;
-            float r2 = r * r;
-            float r3 = r2 * r;
-            float sin2 = sin_theta * sin_theta;
-            
-            dray.pr = -rs / (2.0 * r2) * (E * E / (f * f)) 
-                     + rs / (2.0 * r2) * ray.pr * ray.pr / f
-                     + (1.0 - rs/r) * (ray.ptheta * ray.ptheta / r3 + L2 / (r3 * sin2));
-            
-            // dptheta/dlambda
-            dray.ptheta = L2 * cos_theta / (r2 * sin2 * sin_theta);
-        }
-        
-        // RK4 integration step
-        Ray rk4Step(Ray ray, float L, float E, float h) {
-            Ray k1, k2, k3, k4;
-            Ray temp;
-            
-            geodesicDerivatives(ray, L, E, k1);
-            
-            temp.r = ray.r + 0.5 * h * k1.r;
-            temp.theta = ray.theta + 0.5 * h * k1.theta;
-            temp.phi = ray.phi + 0.5 * h * k1.phi;
-            temp.pr = ray.pr + 0.5 * h * k1.pr;
-            temp.ptheta = ray.ptheta + 0.5 * h * k1.ptheta;
-            geodesicDerivatives(temp, L, E, k2);
-            
-            temp.r = ray.r + 0.5 * h * k2.r;
-            temp.theta = ray.theta + 0.5 * h * k2.theta;
-            temp.phi = ray.phi + 0.5 * h * k2.phi;
-            temp.pr = ray.pr + 0.5 * h * k2.pr;
-            temp.ptheta = ray.ptheta + 0.5 * h * k2.ptheta;
-            geodesicDerivatives(temp, L, E, k3);
-            
-            temp.r = ray.r + h * k3.r;
-            temp.theta = ray.theta + h * k3.theta;
-            temp.phi = ray.phi + h * k3.phi;
-            temp.pr = ray.pr + h * k3.pr;
-            temp.ptheta = ray.ptheta + h * k3.ptheta;
-            geodesicDerivatives(temp, L, E, k4);
-            
-            Ray result;
-            result.r = ray.r + h * (k1.r + 2.0*k2.r + 2.0*k3.r + k4.r) / 6.0;
-            result.theta = ray.theta + h * (k1.theta + 2.0*k2.theta + 2.0*k3.theta + k4.theta) / 6.0;
-            result.phi = ray.phi + h * (k1.phi + 2.0*k2.phi + 2.0*k3.phi + k4.phi) / 6.0;
-            result.pr = ray.pr + h * (k1.pr + 2.0*k2.pr + 2.0*k3.pr + k4.pr) / 6.0;
-            result.ptheta = ray.ptheta + h * (k1.ptheta + 2.0*k2.ptheta + 2.0*k3.ptheta + k4.ptheta) / 6.0;
-            
-            return result;
-        }
-        
-        // === Background textures ===
-        vec3 gridTexture(float theta, float phi) {
-            // Checkerboard pattern on celestial sphere
-            float u = phi / (2.0 * PI);
-            float v = theta / PI;
-            
-            float gridU = mod(u * 20.0, 1.0);
-            float gridV = mod(v * 10.0, 1.0);
-            
-            float lineWidth = 0.05;
-            bool onLine = gridU < lineWidth || gridU > 1.0 - lineWidth ||
-                          gridV < lineWidth || gridV > 1.0 - lineWidth;
-            
-            if (onLine) {
-                return vec3(0.15, 0.1, 0.05);
-            }
-            return vec3(0.02, 0.02, 0.03);
-        }
-        
-        vec3 starField(float theta, float phi) {
-            vec3 color = vec3(0.0);
-            
-            // Multiple layers of stars
-            for (int i = 0; i < 3; i++) {
-                float scale = pow(2.0, float(i)) * 100.0;
-                vec2 cell = floor(vec2(phi, theta) * scale);
-                float h = hash(cell + float(i) * 100.0);
-                
-                if (h > 0.97) {
-                    vec2 cellUV = fract(vec2(phi, theta) * scale);
-                    vec2 starPos = vec2(hash(cell + 0.1), hash(cell + 0.2));
-                    float d = length(cellUV - starPos);
-                    float brightness = (1.0 - h) * 30.0;
-                    float starSize = 0.02 + h * 0.03;
-                    
-                    if (d < starSize) {
-                        float intensity = exp(-d * d / (starSize * starSize * 0.1)) * brightness;
-                        vec3 starColor = mix(vec3(1.0, 0.8, 0.6), vec3(0.6, 0.8, 1.0), hash(cell + 0.5));
-                        color += starColor * intensity;
-                    }
-                }
-            }
-            
-            return color;
-        }
-        
-        // === Accretion Disk ===
-        vec3 accretionDiskColor(float r, float phi) {
-            float innerR = u_diskInner * rs;
-            float outerR = u_diskOuter * rs;
-            
-            if (r < innerR || r > outerR) return vec3(0.0);
-            
-            // Temperature varies with radius (T ~ r^(-3/4) for thin disk)
-            float relR = (r - innerR) / (outerR - innerR);
-            float temp = u_diskTemp * pow(1.0 - relR, 0.75) * (1.0 + 0.5 * relR);
-            
-            // Add some spiral structure
-            float spiral = sin(phi * 3.0 - r * 0.5) * 0.3 + 0.7;
-            float noise = hash(vec2(r * 10.0, phi * 5.0)) * 0.2 + 0.8;
-            
-            // Doppler shift approximation (brighter on approaching side)
-            float doppler = 1.0 + 0.3 * sin(phi);
-            
-            vec3 color = blackbodyColor(temp * doppler) * spiral * noise;
-            
-            // Intensity falls off towards edges
-            float edgeFade = smoothstep(0.0, 0.2, relR) * smoothstep(1.0, 0.8, relR);
-            
-            return color * edgeFade * 2.0;
-        }
-        
-        // === Main Raytracing ===
-        vec3 traceRay(vec2 screenUV) {
-            // Camera setup in Cartesian coordinates
-            float camX = u_camR * sin(u_camTheta) * cos(u_camPhi);
-            float camY = u_camR * sin(u_camTheta) * sin(u_camPhi);
-            float camZ = u_camR * cos(u_camTheta);
-            vec3 camPos = vec3(camX, camY, camZ);
-            
-            // Camera looks at origin
-            vec3 camDir = normalize(-camPos);
-            vec3 camUp = vec3(0.0, 0.0, 1.0);
-            vec3 camRight = normalize(cross(camDir, camUp));
-            camUp = cross(camRight, camDir);
-            
-            // Ray direction in camera space
-            float fov = 1.2;
-            vec3 rayDir = normalize(camDir + (screenUV.x * camRight + screenUV.y * camUp) * fov);
-            
-            // Convert to spherical coordinates for the ray
-            float r = length(camPos);
-            float theta = acos(camZ / r);
-            float phi = atan(camY, camX);
-            
-            // Initial momentum (null geodesic: gμν pμ pν = 0)
-            // We need to set up pr and ptheta from the ray direction
-            
-            // Transform ray direction to spherical basis
-            vec3 e_r = camPos / r;
-            vec3 e_theta = vec3(cos(theta) * cos(phi), cos(theta) * sin(phi), -sin(theta));
-            vec3 e_phi = vec3(-sin(phi), cos(phi), 0.0);
-            
-            float dr_dlambda = dot(rayDir, e_r);
-            float dtheta_dlambda = dot(rayDir, e_theta) / r;
-            float dphi_dlambda = dot(rayDir, e_phi) / (r * sin(theta));
-            
-            // Set up conserved quantities
-            float f = metric_f(r);
-            
-            // For null geodesic, we can set E = 1 (affine parameter freedom)
-            float E = 1.0;
-            
-            // Angular momentum
-            float L = r * r * sin(theta) * sin(theta) * dphi_dlambda;
-            
-            // Radial momentum
-            float pr = dr_dlambda / f;
-            
-            // Theta momentum  
-            float ptheta = r * r * dtheta_dlambda;
-            
-            // Initialize ray state
-            Ray ray;
-            ray.r = r;
-            ray.theta = theta;
-            ray.phi = phi;
-            ray.pr = pr;
-            ray.ptheta = ptheta;
-            
-            // Integration
-            float h = 0.1;  // Step size
-            vec3 color = vec3(0.0);
-            float diskIntensity = 0.0;
-            
-            float prevR = ray.r;
-            float prevTheta = ray.theta;
-            
-            for (int i = 0; i < 1000; i++) {
-                if (i >= u_maxSteps) break;
-                
-                // Adaptive step size
-                float adaptiveH = h * clamp(ray.r / (3.0 * rs), 0.1, 2.0);
-                
-                ray = rk4Step(ray, L, E, adaptiveH);
-                
-                // Check for event horizon crossing
-                if (ray.r < rs * 1.01) {
-                    return vec3(0.0);  // Fell into black hole
-                }
-                
-                // Check for disk intersection (thin disk in equatorial plane)
-                // Disk is at theta = PI/2
-                float diskTheta = PI / 2.0;
-                if ((prevTheta - diskTheta) * (ray.theta - diskTheta) < 0.0) {
-                    // Crossed the disk plane
-                    float t = (diskTheta - prevTheta) / (ray.theta - prevTheta);
-                    float crossR = prevR + t * (ray.r - prevR);
-                    float crossPhi = ray.phi;  // Approximate
-                    
-                    vec3 diskColor = accretionDiskColor(crossR, crossPhi);
-                    if (length(diskColor) > 0.01) {
-                        // Gravitational redshift
-                        float redshift = sqrt(metric_f(crossR));
-                        color += diskColor * redshift;
-                        diskIntensity += 0.5;
-                    }
-                }
-                
-                prevR = ray.r;
-                prevTheta = ray.theta;
-                
-                // Check if escaped to infinity
-                if (ray.r > u_camR * 3.0 && ray.pr > 0.0) {
-                    // Normalize angles
-                    float finalTheta = mod(ray.theta, PI);
-                    float finalPhi = mod(ray.phi, 2.0 * PI);
-                    if (finalPhi < 0.0) finalPhi += 2.0 * PI;
-                    
-                    // Background
-                    vec3 bgColor = vec3(0.0);
-                    if (u_showGrid) bgColor += gridTexture(finalTheta, finalPhi);
-                    if (u_showStars) bgColor += starField(finalTheta, finalPhi);
-                    
-                    color += bgColor * (1.0 - min(diskIntensity, 0.9));
-                    break;
-                }
-            }
-            
-            return color;
-        }
-        
-        void main() {
-            vec2 uv = v_uv * 2.0 - 1.0;
-            uv.x *= u_resolution.x / u_resolution.y;
-            
-            vec3 color = traceRay(uv);
-            
-            // Tone mapping
-            color = color / (1.0 + color);
-            
-            // Gamma correction
-            color = pow(color, vec3(1.0 / 2.2));
-            
-            fragColor = vec4(color, 1.0);
-        }
-    `;
-
-    // === Shader Compilation ===
-    function compileShader(source, type) {
-        const shader = gl.createShader(type);
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-        
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            console.error('Shader compile error:', gl.getShaderInfoLog(shader));
-            return null;
-        }
-        return shader;
-    }
-
-    function createProgram(vertexSource, fragmentSource) {
-        const vertexShader = compileShader(vertexSource, gl.VERTEX_SHADER);
-        const fragmentShader = compileShader(fragmentSource, gl.FRAGMENT_SHADER);
-        
-        const program = gl.createProgram();
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        gl.linkProgram(program);
-        
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.error('Program link error:', gl.getProgramInfoLog(program));
-            return null;
-        }
-        return program;
-    }
-
-    // === Initialize WebGL ===
-    const program = createProgram(vertexShaderSource, fragmentShaderSource);
-    gl.useProgram(program);
-
-    // Fullscreen quad
-    const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-
-    const positionLoc = gl.getAttribLocation(program, 'a_position');
-    gl.enableVertexAttribArray(positionLoc);
-    gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
-
-    // Uniform locations
-    const uniforms = {
-        resolution: gl.getUniformLocation(program, 'u_resolution'),
-        mass: gl.getUniformLocation(program, 'u_mass'),
-        diskInner: gl.getUniformLocation(program, 'u_diskInner'),
-        diskOuter: gl.getUniformLocation(program, 'u_diskOuter'),
-        diskTemp: gl.getUniformLocation(program, 'u_diskTemp'),
-        maxSteps: gl.getUniformLocation(program, 'u_maxSteps'),
-        showGrid: gl.getUniformLocation(program, 'u_showGrid'),
-        showStars: gl.getUniformLocation(program, 'u_showStars'),
-        camR: gl.getUniformLocation(program, 'u_camR'),
-        camTheta: gl.getUniformLocation(program, 'u_camTheta'),
-        camPhi: gl.getUniformLocation(program, 'u_camPhi')
-    };
-
-    // === State ===
-    let params = {
-        mass: 1.0,
-        diskInner: 3.0,
-        diskOuter: 8.0,
-        diskTemp: 5000,
-        maxSteps: 500,
-        showGrid: true,
-        showStars: true,
-        resolution: 0.5
-    };
-
-    let camera = {
-        r: 15.0,
-        theta: Math.PI * 0.45,  // Slightly above equatorial plane
-        phi: 0.0
-    };
-
-    let isDragging = false;
-    let lastMouse = { x: 0, y: 0 };
-
-    // === Resize ===
+    let width, height, centerX, centerY;
+    let zoom = 1;
+    
+    // Simulation parameters
+    let blackHoleMass = 50;
+    let accretionRate = 50;
+    let spinRate = 50;
+    let starCount = 200;
+    
+    // Physics constants (scaled for visualization)
+    const G = 0.5;
+    const c = 10;
+    
+    // Particles
+    let particles = [];
+    let stars = [];
+    let backgroundStars = [];
+    
+    // Resize handler
     function resize() {
-        const scale = params.resolution;
-        canvas.width = window.innerWidth * scale;
-        canvas.height = window.innerHeight * scale;
-        canvas.style.width = window.innerWidth + 'px';
-        canvas.style.height = window.innerHeight + 'px';
-        gl.viewport(0, 0, canvas.width, canvas.height);
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        centerX = width / 2;
+        centerY = height / 2;
+        generateBackgroundStars();
     }
-
-    // === Render ===
-    function render() {
-        gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
-        gl.uniform1f(uniforms.mass, params.mass);
-        gl.uniform1f(uniforms.diskInner, params.diskInner);
-        gl.uniform1f(uniforms.diskOuter, params.diskOuter);
-        gl.uniform1f(uniforms.diskTemp, params.diskTemp);
-        gl.uniform1i(uniforms.maxSteps, params.maxSteps);
-        gl.uniform1i(uniforms.showGrid, params.showGrid ? 1 : 0);
-        gl.uniform1i(uniforms.showStars, params.showStars ? 1 : 0);
-        gl.uniform1f(uniforms.camR, camera.r);
-        gl.uniform1f(uniforms.camTheta, camera.theta);
-        gl.uniform1f(uniforms.camPhi, camera.phi);
+    
+    // Generate background stars
+    function generateBackgroundStars() {
+        backgroundStars = [];
+        for (let i = 0; i < starCount; i++) {
+            backgroundStars.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                size: Math.random() * 2 + 0.5,
+                brightness: Math.random() * 0.8 + 0.2,
+                originalX: 0,
+                originalY: 0
+            });
+            backgroundStars[i].originalX = backgroundStars[i].x;
+            backgroundStars[i].originalY = backgroundStars[i].y;
+        }
+    }
+    
+    // Schwarzschild radius
+    function getSchwarzschildRadius() {
+        return blackHoleMass * 1.2;
+    }
+    
+    // Photon sphere radius (1.5 * Rs)
+    function getPhotonSphereRadius() {
+        return getSchwarzschildRadius() * 1.5;
+    }
+    
+    // Create accretion disk particle
+    function createAccretionParticle(x, y) {
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
         
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        // Orbital velocity (perpendicular to radius)
+        const orbitalSpeed = Math.sqrt(G * blackHoleMass / Math.max(dist, 50)) * 0.8;
+        const spinDirection = spinRate > 50 ? 1 : -1;
+        
+        return {
+            x: x,
+            y: y,
+            vx: -Math.sin(angle) * orbitalSpeed * spinDirection + (Math.random() - 0.5) * 0.5,
+            vy: Math.cos(angle) * orbitalSpeed * spinDirection + (Math.random() - 0.5) * 0.5,
+            life: 1,
+            maxLife: 300 + Math.random() * 200,
+            age: 0,
+            size: Math.random() * 2 + 1,
+            hue: Math.random() * 60 + 10 // Orange to yellow
+        };
+    }
+    
+    // Generate initial accretion disk
+    function generateAccretionDisk() {
+        const rs = getSchwarzschildRadius();
+        const diskInner = rs * 3;
+        const diskOuter = rs * 8;
+        
+        for (let i = 0; i < accretionRate * 3; i++) {
+            const r = diskInner + Math.random() * (diskOuter - diskInner);
+            const angle = Math.random() * Math.PI * 2;
+            const x = centerX + Math.cos(angle) * r;
+            const y = centerY + Math.sin(angle) * r * 0.3; // Flatten for disk perspective
+            particles.push(createAccretionParticle(x, y));
+        }
+    }
+    
+    // Update particles
+    function updateParticles() {
+        const rs = getSchwarzschildRadius();
+        const eventHorizon = rs * 1.1;
+        
+        // Spawn new particles
+        if (particles.length < accretionRate * 5 && Math.random() < accretionRate / 100) {
+            const angle = Math.random() * Math.PI * 2;
+            const r = rs * 4 + Math.random() * rs * 6;
+            const x = centerX + Math.cos(angle) * r;
+            const y = centerY + Math.sin(angle) * r * 0.3;
+            particles.push(createAccretionParticle(x, y));
+        }
+        
+        particles = particles.filter(p => {
+            // Calculate distance to black hole
+            const dx = p.x - centerX;
+            const dy = p.y - centerY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            // Remove if past event horizon
+            if (dist < eventHorizon) return false;
+            
+            // Gravitational acceleration
+            const force = G * blackHoleMass / (dist * dist);
+            const ax = -dx / dist * force;
+            const ay = -dy / dist * force;
+            
+            // Frame dragging effect (Kerr metric approximation)
+            const frameDrag = (spinRate / 50) * 0.02 * blackHoleMass / (dist * dist);
+            const dragX = -dy * frameDrag;
+            const dragY = dx * frameDrag;
+            
+            // Update velocity and position
+            p.vx += ax + dragX;
+            p.vy += ay + dragY;
+            p.x += p.vx;
+            p.y += p.vy;
+            
+            // Update life
+            p.age++;
+            p.life = 1 - p.age / p.maxLife;
+            
+            return p.life > 0 && p.x > 0 && p.x < width && p.y > 0 && p.y < height;
+        });
+        
+        document.getElementById('particleCount').textContent = particles.length;
+    }
+    
+    // Gravitational lensing for background stars
+    function lensPosition(x, y) {
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const rs = getSchwarzschildRadius();
+        
+        if (dist < rs * 0.8) {
+            return null; // Behind event horizon
+        }
+        
+        // Einstein ring effect
+        const deflection = rs * rs / (dist + rs);
+        const factor = 1 + deflection / dist;
+        
+        return {
+            x: centerX + dx * factor,
+            y: centerY + dy * factor,
+            brightness: Math.min(1.5, 1 + deflection / (dist * 0.5))
+        };
+    }
+    
+    // Draw everything
+    function draw() {
+        // Clear with slight trail
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+        ctx.fillRect(0, 0, width, height);
+        
+        const rs = getSchwarzschildRadius();
+        const photonSphere = getPhotonSphereRadius();
         
         // Update stats
-        const rs = 2.0;  // Schwarzschild radius
-        document.getElementById('cameraStats').innerHTML = 
-            `Entfernung: <strong>${(camera.r / rs).toFixed(1)}</strong> rₛ<br>` +
-            `Theta: <strong>${(camera.theta * 180 / Math.PI).toFixed(1)}°</strong><br>` +
-            `Phi: <strong>${(camera.phi * 180 / Math.PI).toFixed(1)}°</strong>`;
+        document.getElementById('rsValue').textContent = Math.round(rs);
+        document.getElementById('prValue').textContent = Math.round(photonSphere);
+        
+        // Draw lensed background stars
+        backgroundStars.forEach(star => {
+            const lensed = lensPosition(star.originalX, star.originalY);
+            if (lensed) {
+                ctx.beginPath();
+                ctx.arc(lensed.x, lensed.y, star.size * lensed.brightness, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness * lensed.brightness * 0.8})`;
+                ctx.fill();
+            }
+        });
+        
+        // Draw accretion disk glow
+        const diskGradient = ctx.createRadialGradient(
+            centerX, centerY, rs * 2,
+            centerX, centerY, rs * 10
+        );
+        diskGradient.addColorStop(0, 'rgba(255, 100, 0, 0.3)');
+        diskGradient.addColorStop(0.3, 'rgba(255, 150, 50, 0.15)');
+        diskGradient.addColorStop(0.7, 'rgba(255, 200, 100, 0.05)');
+        diskGradient.addColorStop(1, 'transparent');
+        
+        ctx.save();
+        ctx.scale(1, 0.3);
+        ctx.translate(0, centerY * 2.3);
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, rs * 10, 0, Math.PI * 2);
+        ctx.fillStyle = diskGradient;
+        ctx.fill();
+        ctx.restore();
+        
+        // Draw particles
+        particles.forEach(p => {
+            const alpha = p.life * 0.9;
+            const temp = Math.min(1, p.life + 0.3);
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${p.hue * temp}, 100%, ${50 + temp * 30}%, ${alpha})`;
+            ctx.fill();
+        });
+        
+        // Draw photon sphere
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, photonSphere, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255, 200, 100, 0.15)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Draw event horizon
+        const bhGradient = ctx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, rs * 1.5
+        );
+        bhGradient.addColorStop(0, '#000');
+        bhGradient.addColorStop(0.7, '#000');
+        bhGradient.addColorStop(0.85, 'rgba(50, 20, 0, 0.8)');
+        bhGradient.addColorStop(0.95, 'rgba(100, 50, 0, 0.3)');
+        bhGradient.addColorStop(1, 'transparent');
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, rs * 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = bhGradient;
+        ctx.fill();
+        
+        // Inner black hole (pure black)
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, rs, 0, Math.PI * 2);
+        ctx.fillStyle = '#000';
+        ctx.fill();
+        
+        // Photon ring (bright ring at photon sphere)
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, photonSphere, 0, Math.PI * 2);
+        const ringGlow = ctx.createRadialGradient(
+            centerX, centerY, photonSphere - 3,
+            centerX, centerY, photonSphere + 3
+        );
+        ringGlow.addColorStop(0, 'transparent');
+        ringGlow.addColorStop(0.5, 'rgba(255, 200, 150, 0.4)');
+        ringGlow.addColorStop(1, 'transparent');
+        ctx.strokeStyle = ringGlow;
+        ctx.lineWidth = 6;
+        ctx.stroke();
     }
-
-    // === Event Handlers ===
-    canvas.addEventListener('mousedown', e => {
-        isDragging = true;
-        lastMouse = { x: e.clientX, y: e.clientY };
-    });
-
-    canvas.addEventListener('mousemove', e => {
-        if (!isDragging) return;
-        
-        const dx = e.clientX - lastMouse.x;
-        const dy = e.clientY - lastMouse.y;
-        
-        camera.phi -= dx * 0.005;
-        camera.theta = Math.max(0.1, Math.min(Math.PI - 0.1, camera.theta + dy * 0.005));
-        
-        lastMouse = { x: e.clientX, y: e.clientY };
-        render();
-    });
-
-    canvas.addEventListener('mouseup', () => isDragging = false);
-    canvas.addEventListener('mouseleave', () => isDragging = false);
-
-    canvas.addEventListener('wheel', e => {
-        e.preventDefault();
-        const zoomSpeed = e.shiftKey ? 0.02 : 0.1;
-        camera.r *= 1 + e.deltaY * zoomSpeed * 0.01;
-        camera.r = Math.max(3.0, Math.min(100.0, camera.r));
-        render();
-    });
-
-    // UI Controls
+    
+    // Animation loop
+    function animate() {
+        updateParticles();
+        draw();
+        requestAnimationFrame(animate);
+    }
+    
+    // Event listeners
+    window.addEventListener('resize', resize);
+    
     document.getElementById('mass').addEventListener('input', e => {
-        params.mass = parseFloat(e.target.value);
-        document.getElementById('massVal').textContent = params.mass.toFixed(1);
-        render();
+        blackHoleMass = parseInt(e.target.value);
+        document.getElementById('massValue').textContent = blackHoleMass;
     });
-
-    document.getElementById('diskInner').addEventListener('input', e => {
-        params.diskInner = parseFloat(e.target.value);
-        document.getElementById('diskInnerVal').textContent = params.diskInner.toFixed(1);
-        render();
+    
+    document.getElementById('accretion').addEventListener('input', e => {
+        accretionRate = parseInt(e.target.value);
+        document.getElementById('accretionValue').textContent = accretionRate;
     });
-
-    document.getElementById('diskOuter').addEventListener('input', e => {
-        params.diskOuter = parseFloat(e.target.value);
-        document.getElementById('diskOuterVal').textContent = params.diskOuter.toFixed(1);
-        render();
+    
+    document.getElementById('spin').addEventListener('input', e => {
+        spinRate = parseInt(e.target.value);
+        document.getElementById('spinValue').textContent = spinRate;
     });
-
-    document.getElementById('diskTemp').addEventListener('input', e => {
-        params.diskTemp = parseInt(e.target.value);
-        document.getElementById('diskTempVal').textContent = params.diskTemp;
-        render();
+    
+    document.getElementById('stars').addEventListener('input', e => {
+        starCount = parseInt(e.target.value);
+        document.getElementById('starsValue').textContent = starCount;
+        generateBackgroundStars();
     });
-
-    document.getElementById('resolution').addEventListener('input', e => {
-        params.resolution = parseFloat(e.target.value);
-        document.getElementById('resVal').textContent = params.resolution.toFixed(2);
-        resize();
-        render();
+    
+    canvas.addEventListener('click', e => {
+        for (let i = 0; i < 20; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const spread = Math.random() * 30;
+            particles.push(createAccretionParticle(
+                e.clientX + Math.cos(angle) * spread,
+                e.clientY + Math.sin(angle) * spread
+            ));
+        }
     });
-
-    document.getElementById('steps').addEventListener('input', e => {
-        params.maxSteps = parseInt(e.target.value);
-        document.getElementById('stepsVal').textContent = params.maxSteps;
-        render();
-    });
-
-    document.getElementById('showGrid').addEventListener('change', e => {
-        params.showGrid = e.target.checked;
-        render();
-    });
-
-    document.getElementById('showStars').addEventListener('change', e => {
-        params.showStars = e.target.checked;
-        render();
-    });
-
-    window.addEventListener('resize', () => {
-        resize();
-        render();
-    });
-
-    // === Initialize ===
+    
+    // Initialize
     resize();
-    loading.style.display = 'none';
-    render();
+    generateAccretionDisk();
+    animate();
 </script>
 ```
 
