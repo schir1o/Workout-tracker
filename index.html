@@ -1,116 +1,293 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<title>Mein Tagebuch</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Mein Tagebuch</title>
 
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        margin: 0;
-        padding: 0;
+  <style>
+    :root{
+      --bg:#f5f6f8;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --accent:#2563eb;
+      --danger:#ef4444;
+      --shadow: 0 10px 25px rgba(0,0,0,.08);
+
+      --radius: 16px;
+      --pad: 16px;
+
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+      --safe-left: env(safe-area-inset-left);
+      --safe-right: env(safe-area-inset-right);
     }
 
-    .container {
-        max-width: 700px;
-        margin: 40px auto;
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    [data-theme="dark"]{
+      --bg:#0b1220;
+      --card:#0f1a2b;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --border:#1f2a3a;
+      --accent:#60a5fa;
+      --danger:#fb7185;
+      --shadow: 0 10px 25px rgba(0,0,0,.35);
     }
 
-    h1 {
-        text-align: center;
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: calc(14px + var(--safe-top)) calc(14px + var(--safe-left)) calc(22px + var(--safe-bottom)) calc(14px + var(--safe-right));
     }
 
-    input, textarea, button {
-        width: 100%;
-        margin-top: 10px;
-        padding: 10px;
-        font-size: 16px;
+    .app{
+      max-width: 780px;
+      margin: 0 auto;
+      display:flex;
+      flex-direction: column;
+      gap: 14px;
     }
 
-    textarea {
-        min-height: 150px;
-        resize: vertical;
+    header{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 6px 2px;
     }
 
-    button {
-        background: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
+    .title{
+      display:flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+    .title h1{
+      margin:0;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+    }
+    .title .sub{
+      margin-top:4px;
+      font-size: 13px;
+      color: var(--muted);
     }
 
-    button:hover {
-        background: #45a049;
+    .row{ display:flex; gap:10px; align-items:center; }
+    .btn{
+      -webkit-tap-highlight-color: transparent;
+      border:1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor:pointer;
+      box-shadow: none;
+      transition: transform .05s ease, border-color .15s ease, background .15s ease;
+      white-space: nowrap;
+    }
+    .btn:active{ transform: scale(.98); }
+    .btn.primary{
+      background: var(--accent);
+      border-color: transparent;
+      color: #fff;
+    }
+    .btn.danger{
+      background: transparent;
+      border-color: color-mix(in srgb, var(--danger) 35%, var(--border));
+      color: var(--danger);
     }
 
-    .entry {
-        border-top: 1px solid #ddd;
-        margin-top: 20px;
-        padding-top: 10px;
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
     }
 
-    .entry-date {
-        font-weight: bold;
-        margin-bottom: 5px;
+    .card .card-header{
+      padding: 14px var(--pad);
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
     }
-</style>
+
+    .card .card-body{
+      padding: var(--pad);
+    }
+
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 10px 0 6px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    input[type="text"], input[type="date"], textarea, select{
+      width:100%;
+      border:1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 12px;
+      font-size: 16px; /* iOS: verhindert Zoom */
+      outline:none;
+    }
+
+    textarea{
+      min-height: 160px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 520px){
+      .grid{ grid-template-columns: 1fr; }
+      .hide-mobile{ display:none; }
+    }
+
+    .toolbar{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      justify-content: space-between;
+    }
+    .toolbar .left, .toolbar .right{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+    .pill{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .list{
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .entry{
+      padding: 14px var(--pad);
+      border-top: 1px solid var(--border);
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .entry-top{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      justify-content: space-between;
+    }
+
+    .entry-title{
+      margin:0;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .entry-meta{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .badge{
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border:1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+    }
+
+    .entry-text{
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .entry-actions{
+      display:flex;
+      gap: 8px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .hint{
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: calc(18px + var(--safe-bottom));
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.82);
+      color:#fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+    [data-theme="dark"] .toast{ background: rgba(255,255,255,.14); }
+
+    .toast.show{ opacity: 1; }
+    .file-input{ display:none; }
+
+    .footer{
+      text-align:center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 6px 0 0;
+    }
+  </style>
 </head>
+
 <body>
-
-<div class="container">
-    <h1>📔 Mein Tagebuch</h1>
-
-    <input type="date" id="date">
-    <textarea id="text" placeholder="Was ist heute passiert?"></textarea>
-    <button onclick="saveEntry()">Eintrag speichern</button>
-
-    <div id="entries"></div>
-</div>
-
-<script>
-    let entries = JSON.parse(localStorage.getItem("tagebuch")) || [];
-
-    function saveEntry() {
-        const date = document.getElementById("date").value;
-        const text = document.getElementById("text").value;
-
-        if (!date || !text) {
-            alert("Bitte Datum und Text eingeben.");
-            return;
-        }
-
-        entries.unshift({ date, text });
-        localStorage.setItem("tagebuch", JSON.stringify(entries));
-
-        document.getElementById("text").value = "";
-        renderEntries();
-    }
-
-    function renderEntries() {
-        const container = document.getElementById("entries");
-        container.innerHTML = "";
-
-        entries.forEach(entry => {
-            const div = document.createElement("div");
-            div.className = "entry";
-
-            div.innerHTML = `
-                <div class="entry-date">${entry.date}</div>
-                <div>${entry.text.replace(/\n/g, "<br>")}</div>
-            `;
-
-            container.appendChild(div);
-        });
-    }
-
-    renderEntries();
-</script>
-
-</body>
-</html>
+  <div class="app" id="app">
+    <header>
+      <div class="title">
+        <h1>📔 Mein Tagebuch</h1>
+        <div class="sub">Offline gespeichert auf diesem Gerät</div>
+      </div>
+      <div class="row">
+        <button class="btn" id="themeBtn" title="Dark Mode umschalten
