@@ -203,7 +203,8 @@ button{font-family:inherit; cursor:pointer; border:0;}
 
 #ja{
   font-family:var(--serif); font-weight:700; font-size:1.2rem;
-  padding:.72em 2.1em; min-height:52px;
+  padding:.6em 1.6em; min-height:52px;
+  white-space:nowrap; max-width:100%;
   color:#fff6f0; border-radius:2px;
   background:linear-gradient(165deg,var(--rubin-hell),var(--rubin) 70%);
   box-shadow:0 10px 22px rgba(164,31,63,.42), inset 0 1px 0 rgba(255,255,255,.25);
@@ -621,7 +622,9 @@ dl{margin:0;}
     nein.style.top  = best[1]+'px';
     nein.style.transform = 'rotate(' + (Math.random()*16-8).toFixed(1) + 'deg)';
 
-    groesse = Math.min(groesse*1.17, 2.7);
+    // am Fenster deckeln, damit "JA!!! 💖" auch auf schmalen Handys in eine Zeile passt
+    var maxRem = Math.max(1.6, Math.min(2.7, window.innerWidth/150));
+    groesse = Math.min(groesse*1.17, maxRem);
     ja.style.fontSize = groesse.toFixed(2)+'rem';
     jaStufen.forEach(function(s){ if(schritt >= s[0]) ja.textContent = s[1]; });
     ja.classList.remove('hibbelig');
