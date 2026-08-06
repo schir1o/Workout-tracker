@@ -1,15 +1,25 @@
 # PickMe 💌
 
-Eine Single-File-Landingpage: „Tatjana, willst du morgen mit mir auf ein Date?"
-Der **Nein**-Button flüchtet (auch auf dem Handy), der **Ja**-Button wird immer größer.
+Eine Single-File-Landingpage im Liebesbrief-Look: versiegelter Umschlag, Briefpapier,
+Handschrift-Typografie, am Ende ein perforiertes Date-Ticket.
 
 **Live:** https://schir1o.github.io/PickMe/
 
 ## Ablauf
 
-1. **Frage** – Nein hüpft weg und verschwindet nie, süße Nachrichten poppen auf
-2. **Planung** – Aktivitäten auswählen (mehrere möglich), eigenes Ideen-Feld, Uhrzeit
-3. **Fertig** – die Mails gehen von allein raus
+0. **Umschlag** – Wachssiegel, tippen zum Öffnen
+1. **Der Brief** – die Frage · der Nein-Zettel flüchtet und verschwindet nie,
+   handgeschriebene Nachrichten flattern rein, „Ja" wächst mit jedem Ausweichen
+2. **Planung** – Aktivitäten (mehrere möglich), eigenes Ideen-Feld, Uhrzeit
+3. **Ticket** – Zusammenfassung zum Screenshotten, die Mails gehen von allein raus
+
+Design: Nachtblau-Verlauf mit Filmkorn und schwebendem Staub, Papier in Creme,
+Rubin als Akzent. Schriften: *Fraunces* (Serif) und *Caveat* (Handschrift) von Google Fonts —
+fallen ohne Netz sauber auf Systemschriften zurück. Reduzierte Bewegung wird respektiert
+(`prefers-reduced-motion`).
+
+Fürs Handy: `dvh`-Höhen, Safe-Area fürs Notch, Tap-Ziele ≥ 46 px,
+16 px Eingabefelder (kein Auto-Zoom in iOS), kein Bounce-Scrolling.
 
 Es gehen **zwei Mails** an `keller.dke@gmail.com`:
 
